@@ -1,17 +1,20 @@
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
+import models.Arac;
+import models.Kiralama;
+import models.Musteri;
+
 public class Main {
+
     public static void main(String[] args) {
-        // Press Opt+Enter with your caret at the highlighted text to see how
-        // IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        // Press Ctrl+R or click the green arrow button in the gutter to run the code.
-        for (int i = 1; i <= 5; i++) {
+        Arac arac = new Arac(1, "Toyota", "Corolla", 1500, true);
 
-            // Press Ctrl+D to start debugging your code. We have set one breakpoint
-            // for you, but you can always add more by pressing Cmd+F8.
-            System.out.println("i = " + i);
-        }
+        Musteri musteri = new Musteri(1, "İremsu Pala", "5551234567");
+
+        Kiralama kiralama = new Kiralama(1, arac, musteri, 3);
+
+        System.out.println(arac);
+        System.out.println(musteri);
+        System.out.println(kiralama);
+        System.out.println("Toplam Ücret: " + kiralama.getToplamUcret());
     }
 }
