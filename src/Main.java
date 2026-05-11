@@ -2,7 +2,7 @@ import models.Arac;
 import models.Kiralama;
 import models.Musteri;
 import services.AracService;
-
+import services.DosyaService;
 public class Main {
 
     public static void main(String[] args) {
@@ -28,6 +28,15 @@ public class Main {
         System.out.println("\nARAÇ SİLME:");
         aracService.aracSil(1);
         System.out.println("\nGÜNCEL LİSTE:");
+        aracService.araclariListele();
+
+        //---------------------------------------------------------------------------------------------------------
+        AracService aracService1 = new AracService();
+        Arac arac12 = new Arac(1, "Toyota", "Corolla", 1500, true);
+        Arac arac23 = new Arac(2, "BMW", "320i", 3000, true);
+        aracService.aracEkle(arac1);
+        aracService.aracEkle(arac2);
+        System.out.println("\nARAÇ LİSTESİ:");
         aracService.araclariListele();
     }
 }
