@@ -5,9 +5,7 @@ import java.util.ArrayList;
 public class AracService {
     private ArrayList<Arac> aracListesi;
     private DosyaService dosyaService;
-
     public AracService() {
-        aracListesi = new ArrayList<>();
         dosyaService = new DosyaService();
         aracListesi = dosyaService.araclariYukle();
     }
@@ -32,6 +30,7 @@ public class AracService {
                 break;
             }
         }
+
         if (silinecekArac != null) {
             aracListesi.remove(silinecekArac);
             dosyaService.araclariKaydet(aracListesi);
@@ -41,6 +40,7 @@ public class AracService {
             System.out.println("Araç bulunamadı.");
         }
     }
+
     // Araç listeleme
     public void araclariListele() {
         if (aracListesi.isEmpty()) {
@@ -56,6 +56,7 @@ public class AracService {
             );
         }
     }
+
     // ID ile araç getirme
     public Arac aracGetir(int id) {
         for (Arac arac : aracListesi) {
@@ -65,7 +66,8 @@ public class AracService {
         }
         return null;
     }
-    // Aynı ID'ye sahip araç var mı kontrolü
+
+    // Aynı ID kontrolü
     private boolean aracVarMi(int id) {
         for (Arac arac : aracListesi) {
             if (arac.getId() == id) {
@@ -74,7 +76,8 @@ public class AracService {
         }
         return false;
     }
-    // Araç listesini döndürme
+
+    // Listeyi döndür
     public ArrayList<Arac> getAracListesi() {
         return aracListesi;
     }
