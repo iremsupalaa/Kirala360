@@ -3,11 +3,12 @@ import models.Kiralama;
 import models.Musteri;
 import services.AracService;
 import services.DosyaService;
+import gui.MainFrame;
 public class Main {
 
     public static void main(String[] args) {
 
-        Arac arac = new Arac(1, "Toyota", "Corolla", 1500, true);
+        /*Arac arac = new Arac(1, "Toyota", "Corolla", 1500, true);
         Musteri musteri = new Musteri(1, "İremsu Pala", "5551234567");
         Kiralama kiralama = new Kiralama(1, arac, musteri, 3);
 
@@ -37,6 +38,8 @@ public class Main {
         aracService.aracEkle(arac1);
         aracService.aracEkle(arac2);
         System.out.println("\nARAÇ LİSTESİ:");
-        aracService.araclariListele();
+        aracService.araclariListele();*/
+
+        new MainFrame();
     }
 }
