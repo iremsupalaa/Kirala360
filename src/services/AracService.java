@@ -81,4 +81,15 @@ public class AracService {
     public ArrayList<Arac> getAracListesi() {
         return aracListesi;
     }
+
+
+    public ArrayList<Arac> musaitAraclariGetir() {
+        ArrayList<Arac> liste = new ArrayList<>();
+        for (Arac arac : aracListesi) {
+            if (arac.isMusaitMi()) {
+                liste.add(arac);
+            }
+        }
+        return liste;
+    }
 }
