@@ -49,6 +49,7 @@ public class MainFrame extends JFrame {
     private JTextField kiralamaIdField, musteriField, gunField;
     private JTable aracTable;
     private DefaultTableModel tableModel;
+    private JLabel tableTitleLabel;
     private AracService aracService;
     private KiralamaService kiralamaService;
 
@@ -58,8 +59,8 @@ public class MainFrame extends JFrame {
         kiralamaService = new KiralamaService();
 
         setTitle("Araç Kiralama Sistemi");
-        setSize(1100, 800);
-        setMinimumSize(new Dimension(1100, 900));
+        setSize(1100, 900);
+        setMinimumSize(new Dimension(1100, 800));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -174,6 +175,44 @@ public class MainFrame extends JFrame {
             }
         });
 
+        // Tablo başlık paneli (NORTH)
+        JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 10));
+        titleBar.setOpaque(false);
+        titleBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, GRID));
+        tableTitleLabel = new JLabel("Tüm Araçlar");
+        tableTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        tableTitleLabel.setForeground(TITLE_FG);
+        titleBar.add(tableTitleLabel);
+        tableCard.add(titleBar, BorderLayout.NORTH);
+
+        // ── SAĞ TIKLA → SİL ──────────────────────────────────────────────
+        aracTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mousePressed(java.awt.event.MouseEvent e) {
+                if (!SwingUtilities.isRightMouseButton(e)) return;
+                int row = aracTable.rowAtPoint(e.getPoint());
+                if (row < 0) return;
+                aracTable.setRowSelectionInterval(row, row);
+
+                Object idObj  = tableModel.getValueAt(row, 0);
+                Object marka  = tableModel.getValueAt(row, 1);
+                Object model  = tableModel.getValueAt(row, 2);
+
+                int secim = JOptionPane.showConfirmDialog(
+                        MainFrame.this,
+                        "<html><b>" + marka + " " + model + "</b> aracını silmek istiyor musunuz?</html>",
+                        "Araç Sil",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                if (secim == JOptionPane.YES_OPTION) {
+                    int id = Integer.parseInt(idObj.toString());
+                    aracService.aracSil(id);
+                    tabloyuYenile();
+                }
+            }
+        });
+
         JScrollPane scroll = new JScrollPane(aracTable);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(CARD_BG);
@@ -201,12 +240,19 @@ public class MainFrame extends JFrame {
         ekleBtn.addActionListener(e -> aracEkle());
         kiralaBtn.addActionListener(e -> aracKirala());
         musaitBtn.addActionListener(e -> {
+            tableTitleLabel.setText("Müsait Araçlar");
             tableModel.setRowCount(0);
             for (Arac a : aracService.musaitAraclariGetir())
                 tableModel.addRow(tableRow(a, "Müsait"));
         });
-        tumBtn.addActionListener(e -> tabloyuYenile());
-        kiradaBtn.addActionListener(e -> kiradakiAraclariGoster());
+        tumBtn.addActionListener(e -> {
+            tableTitleLabel.setText("Tüm Araçlar");
+            tabloyuYenile();
+        });
+        kiradaBtn.addActionListener(e -> {
+            tableTitleLabel.setText("Kiradaki Araçlar");
+            kiradakiAraclariGoster();
+        });
 
         tabloyuYenile();
         setVisible(true);
