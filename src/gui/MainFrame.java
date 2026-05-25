@@ -51,6 +51,11 @@ public class MainFrame extends JFrame {
     private JTable aracTable;
     private DefaultTableModel tableModel;
     private JLabel tableTitleLabel;
+
+    // Filtre alanları
+    private JTextField aramaField, minFiyatField, maxFiyatField;
+    private JPanel filterBar;
+    private String aktifGorunum = "tum"; // "tum" veya "musait"
     private AracService aracService;
     private KiralamaService kiralamaService;
 
@@ -61,7 +66,7 @@ public class MainFrame extends JFrame {
 
         setTitle("Araç Kiralama Sistemi");
         setSize(1100, 800);
-        setMinimumSize(new Dimension(1100, 900));
+        setMinimumSize(new Dimension(1100, 800));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -185,7 +190,12 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Tablo başlık paneli (NORTH)
+        // Tablo başlık paneli (NORTH) — başlık + filtre barı
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
+        northPanel.setOpaque(false);
+
+        // Başlık satırı
         JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 10));
         titleBar.setOpaque(false);
         titleBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, GRID));
@@ -193,7 +203,68 @@ public class MainFrame extends JFrame {
         tableTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         tableTitleLabel.setForeground(TITLE_FG);
         titleBar.add(tableTitleLabel);
-        tableCard.add(titleBar, BorderLayout.NORTH);
+        northPanel.add(titleBar);
+
+        // Filtre barı
+        filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        filterBar.setOpaque(false);
+        filterBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, GRID));
+
+        JLabel aramaLbl = new JLabel("Marka / Model:");
+        aramaLbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        aramaLbl.setForeground(LABEL_FG);
+        aramaField = new JTextField(14);
+        aramaField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        aramaField.setPreferredSize(new Dimension(160, 28));
+        aramaField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(INPUT_BDR, 1), new EmptyBorder(2, 7, 2, 7)));
+
+        JLabel minLbl = new JLabel("Min ₺:");
+        minLbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        minLbl.setForeground(LABEL_FG);
+        minFiyatField = new JTextField(6);
+        minFiyatField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        minFiyatField.setPreferredSize(new Dimension(80, 28));
+        minFiyatField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(INPUT_BDR, 1), new EmptyBorder(2, 7, 2, 7)));
+
+        JLabel maxLbl = new JLabel("Max ₺:");
+        maxLbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        maxLbl.setForeground(LABEL_FG);
+        maxFiyatField = new JTextField(6);
+        maxFiyatField.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        maxFiyatField.setPreferredSize(new Dimension(80, 28));
+        maxFiyatField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(INPUT_BDR, 1), new EmptyBorder(2, 7, 2, 7)));
+
+        RoundButton filtreBtn = new RoundButton("  Filtrele", ACCENT, Color.WHITE,
+                new SearchIcon(12, Color.WHITE), 8);
+        filtreBtn.setPreferredSize(new Dimension(100, 28));
+
+        RoundButton temizleBtn = new RoundButton("  Temizle", new Color(230, 232, 240),
+                LABEL_FG, null, 8);
+        temizleBtn.setPreferredSize(new Dimension(95, 28));
+
+        filterBar.add(aramaLbl);
+        filterBar.add(aramaField);
+        filterBar.add(minLbl);
+        filterBar.add(minFiyatField);
+        filterBar.add(maxLbl);
+        filterBar.add(maxFiyatField);
+        filterBar.add(filtreBtn);
+        filterBar.add(temizleBtn);
+        northPanel.add(filterBar);
+
+        tableCard.add(northPanel, BorderLayout.NORTH);
+
+        // Filtre aksiyonları
+        filtreBtn.addActionListener(e -> filtreUygula());
+        temizleBtn.addActionListener(e -> filtreSifirla());
+        // Enter tuşuyla da filtrele
+        java.awt.event.ActionListener enterFiltre = e -> filtreUygula();
+        aramaField.addActionListener(enterFiltre);
+        minFiyatField.addActionListener(enterFiltre);
+        maxFiyatField.addActionListener(enterFiltre);
 
         // ── SAĞ TIKLA → Görünüme göre: Araç Sil veya Kiralama İptal ────────
         aracTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -278,13 +349,7 @@ public class MainFrame extends JFrame {
         // ── ACTION ────────────────────────────────────────────────────────
         ekleBtn.addActionListener(e -> aracEkle());
         kiralaBtn.addActionListener(e -> aracKirala());
-        musaitBtn.addActionListener(e -> {
-            tableTitleLabel.setText("Müsait Araçlar");
-            setStandardColumns();
-            tableModel.setRowCount(0);
-            for (Arac a : aracService.musaitAraclariGetir())
-                tableModel.addRow(tableRow(a, "Müsait"));
-        });
+        musaitBtn.addActionListener(e -> musaitAraclariGoster());
         tumBtn.addActionListener(e -> {
             tableTitleLabel.setText("Tüm Araçlar");
             tabloyuYenile();
@@ -494,7 +559,7 @@ public class MainFrame extends JFrame {
     /** Kiradaki araçlar için 6 sütunlu görünüm */
     private void setKiradaColumns() {
         tableModel.setColumnCount(0);
-        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsaitlik Tarihi"})
+        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsait Olacağı Tarih"})
             tableModel.addColumn(col);
         int[] cw = {55, 130, 130, 120, 140, 155};
         for (int i = 0; i < cw.length; i++)
@@ -502,7 +567,9 @@ public class MainFrame extends JFrame {
     }
 
     private void tabloyuYenile() {
+        aktifGorunum = "tum";
         setStandardColumns();
+        filterBar.setVisible(true);
         tableModel.setRowCount(0);
         for (Arac a : aracService.getAracListesi())
             tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
@@ -510,6 +577,7 @@ public class MainFrame extends JFrame {
 
     private void kiradakiAraclariGoster() {
         setKiradaColumns();
+        filterBar.setVisible(false);
         tableModel.setRowCount(0);
         for (Kiralama k : kiralamaService.getKiralamaListesi())
             tableModel.addRow(new Object[]{
@@ -520,6 +588,60 @@ public class MainFrame extends JFrame {
                     k.getKiralamaTarihiStr(),
                     k.getMusaitOlacakTarihStr()
             });
+    }
+
+    private void musaitAraclariGoster() {
+        aktifGorunum = "musait";
+        tableTitleLabel.setText("Müsait Araçlar");
+        setStandardColumns();
+        filterBar.setVisible(true);
+        aramaField.setText("");
+        minFiyatField.setText("");
+        maxFiyatField.setText("");
+        tableModel.setRowCount(0);
+        for (Arac a : aracService.musaitAraclariGetir())
+            tableModel.addRow(tableRow(a, "Müsait"));
+    }
+
+    private void filtreUygula() {
+        String aranan  = aramaField.getText().trim().toLowerCase();
+        String minText = minFiyatField.getText().trim().replace(",", ".");
+        String maxText = maxFiyatField.getText().trim().replace(",", ".");
+
+        double minF = 0;
+        double maxF = Double.MAX_VALUE;
+        try { if (!minText.isEmpty()) minF = Double.parseDouble(minText); } catch (NumberFormatException ignored) {}
+        try { if (!maxText.isEmpty()) maxF = Double.parseDouble(maxText); } catch (NumberFormatException ignored) {}
+
+        setStandardColumns();
+        tableModel.setRowCount(0);
+
+        final double minFinal = minF;
+        final double maxFinal = maxF;
+
+        java.util.ArrayList<Arac> kaynak = aktifGorunum.equals("musait")
+                ? aracService.musaitAraclariGetir()
+                : aracService.getAracListesi();
+
+        for (Arac a : kaynak) {
+            boolean markaEslesti = aranan.isEmpty()
+                    || a.getMarka().toLowerCase().contains(aranan)
+                    || a.getModel().toLowerCase().contains(aranan);
+            boolean fiyatEslesti = a.getGunlukFiyat() >= minFinal && a.getGunlukFiyat() <= maxFinal;
+
+            if (markaEslesti && fiyatEslesti)
+                tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
+        }
+
+        tableTitleLabel.setText("Arama Sonuçları (" + tableModel.getRowCount() + " araç)");
+    }
+
+    private void filtreSifirla() {
+        aramaField.setText("");
+        minFiyatField.setText("");
+        maxFiyatField.setText("");
+        tableTitleLabel.setText("Tüm Araçlar");
+        tabloyuYenile();
     }
 
     private void temizle() {
