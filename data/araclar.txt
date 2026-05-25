@@ -1,3 +1,5 @@
 2,peugeot,208,200.0,true
 4,audi,a5,500.0,true
 1,volkswagen,tiguan,450.0,true
+3,fosfagen,kedi mayneli ayar veriş,19.0,true
+5,bemewe,besyirmi,5200.0,true
