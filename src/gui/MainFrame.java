@@ -4,6 +4,7 @@ import models.Arac;
 import models.Kiralama;
 import models.Musteri;
 import services.AracService;
+import services.DosyaService;
 import services.KiralamaService;
 
 import javax.swing.*;
@@ -194,7 +195,7 @@ public class MainFrame extends JFrame {
         titleBar.add(tableTitleLabel);
         tableCard.add(titleBar, BorderLayout.NORTH);
 
-        // ── SAĞ TIKLA → SİL ──────────────────────────────────────────────
+        // ── SAĞ TIKLA → Görünüme göre: Araç Sil veya Kiralama İptal ────────
         aracTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mousePressed(java.awt.event.MouseEvent e) {
                 if (!SwingUtilities.isRightMouseButton(e)) return;
@@ -202,22 +203,51 @@ public class MainFrame extends JFrame {
                 if (row < 0) return;
                 aracTable.setRowSelectionInterval(row, row);
 
-                Object idObj  = tableModel.getValueAt(row, 0);
-                Object marka  = tableModel.getValueAt(row, 1);
-                Object model  = tableModel.getValueAt(row, 2);
+                boolean kiradaGorunumu = tableModel.getColumnCount() == 6;
 
-                int secim = JOptionPane.showConfirmDialog(
-                        MainFrame.this,
-                        "<html><b>" + marka + " " + model + "</b> aracını silmek istiyor musunuz?</html>",
-                        "Araç Sil",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE
-                );
+                if (kiradaGorunumu) {
+                    // ── Kiralama İptal ────────────────────────────────────
+                    Object idObj  = tableModel.getValueAt(row, 0);
+                    Object marka  = tableModel.getValueAt(row, 1);
+                    Object model  = tableModel.getValueAt(row, 2);
+                    Object musteri = tableModel.getValueAt(row, 3);
 
-                if (secim == JOptionPane.YES_OPTION) {
-                    int id = Integer.parseInt(idObj.toString());
-                    aracService.aracSil(id);
-                    tabloyuYenile();
+                    int secim = JOptionPane.showConfirmDialog(
+                            MainFrame.this,
+                            "<html><b>" + marka + " " + model + "</b> aracının<br>"
+                                    + "<b>" + musteri + "</b> adlı müşteriye ait kiralamasını iptal etmek istiyor musunuz?</html>",
+                            "Kiralama İptal",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    if (secim == JOptionPane.YES_OPTION) {
+                        int aracId = Integer.parseInt(idObj.toString());
+                        kiralamaService.kiralamaIptalEt(aracId);
+                        // Araç müsaitlik durumu değişti — araç dosyasını güncelle
+                        new DosyaService().araclariKaydet(aracService.getAracListesi());
+                        kiradakiAraclariGoster();
+                    }
+
+                } else {
+                    // ── Araç Sil ──────────────────────────────────────────
+                    Object idObj = tableModel.getValueAt(row, 0);
+                    Object marka = tableModel.getValueAt(row, 1);
+                    Object model = tableModel.getValueAt(row, 2);
+
+                    int secim = JOptionPane.showConfirmDialog(
+                            MainFrame.this,
+                            "<html><b>" + marka + " " + model + "</b> aracını silmek istiyor musunuz?</html>",
+                            "Araç Sil",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    if (secim == JOptionPane.YES_OPTION) {
+                        int id = Integer.parseInt(idObj.toString());
+                        aracService.aracSil(id);
+                        tabloyuYenile();
+                    }
                 }
             }
         });
@@ -464,7 +494,7 @@ public class MainFrame extends JFrame {
     /** Kiradaki araçlar için 6 sütunlu görünüm */
     private void setKiradaColumns() {
         tableModel.setColumnCount(0);
-        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsaitlik Tarih"})
+        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsaitlik Tarihi"})
             tableModel.addColumn(col);
         int[] cw = {55, 130, 130, 120, 140, 155};
         for (int i = 0; i < cw.length; i++)

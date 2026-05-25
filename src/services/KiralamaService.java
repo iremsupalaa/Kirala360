@@ -37,4 +37,19 @@ public class KiralamaService {
     public ArrayList<Kiralama> getKiralamaListesi() {
         return kiralamaListesi;
     }
+
+    /**
+     * Araç ID'sine göre kiralama kaydını iptal eder.
+     * Aracı tekrar müsait olarak işaretler ve dosyayı günceller.
+     */
+    public void kiralamaIptalEt(int aracId) {
+        kiralamaListesi.removeIf(k -> {
+            if (k.getArac().getId() == aracId) {
+                k.getArac().setMusaitMi(true);   // Aracı müsait yap
+                return true;                      // Listeden çıkar
+            }
+            return false;
+        });
+        dosyaService.kiralamalariKaydet(kiralamaListesi);
+    }
 }
