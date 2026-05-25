@@ -4,6 +4,7 @@ import models.Arac;
 import models.Kiralama;
 import models.Musteri;
 import services.AracService;
+import services.DosyaService;
 import services.KiralamaService;
 
 import javax.swing.*;
@@ -56,11 +57,11 @@ public class MainFrame extends JFrame {
     // ════════════════════════════════════════════════════════════════════════
     public MainFrame() {
         aracService     = new AracService();
-        kiralamaService = new KiralamaService();
+        kiralamaService = new KiralamaService(aracService.getAracListesi());
 
         setTitle("Araç Kiralama Sistemi");
-        setSize(1100, 900);
-        setMinimumSize(new Dimension(1100, 800));
+        setSize(1100, 800);
+        setMinimumSize(new Dimension(1100, 900));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -164,12 +165,21 @@ public class MainFrame extends JFrame {
                 }
                 setFont(new Font("SansSerif", Font.PLAIN, 14));
                 setHorizontalAlignment(col == 0 ? CENTER : LEFT);
-                if (col == 4 && v != null) {
+                if (col == 4 && v != null && t.getColumnCount() == 5) {
+                    // Standart görünüm: Müsaitlik sütunu
                     setHorizontalAlignment(CENTER);
                     setFont(new Font("SansSerif", Font.BOLD, 13));
                     boolean m = "Müsait".equals(v.toString());
                     if (!sel) { setBackground(m ? MUSAIT_BG : KIRADA_BG);
                         setForeground(m ? MUSAIT_FG : KIRADA_FG); }
+                }
+                if (col == 5 && v != null && t.getColumnCount() == 6) {
+                    // Kiradaki araçlar: Müsait Olacağı Tarih sütunu — sarı
+                    setHorizontalAlignment(CENTER);
+                    if (!sel) {
+                        setBackground(new Color(255, 243, 180));
+                        setForeground(new Color(150, 100, 0));
+                    }
                 }
                 return this;
             }
@@ -185,7 +195,7 @@ public class MainFrame extends JFrame {
         titleBar.add(tableTitleLabel);
         tableCard.add(titleBar, BorderLayout.NORTH);
 
-        // ── SAĞ TIKLA → SİL ──────────────────────────────────────────────
+        // ── SAĞ TIKLA → Görünüme göre: Araç Sil veya Kiralama İptal ────────
         aracTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mousePressed(java.awt.event.MouseEvent e) {
                 if (!SwingUtilities.isRightMouseButton(e)) return;
@@ -193,22 +203,51 @@ public class MainFrame extends JFrame {
                 if (row < 0) return;
                 aracTable.setRowSelectionInterval(row, row);
 
-                Object idObj  = tableModel.getValueAt(row, 0);
-                Object marka  = tableModel.getValueAt(row, 1);
-                Object model  = tableModel.getValueAt(row, 2);
+                boolean kiradaGorunumu = tableModel.getColumnCount() == 6;
 
-                int secim = JOptionPane.showConfirmDialog(
-                        MainFrame.this,
-                        "<html><b>" + marka + " " + model + "</b> aracını silmek istiyor musunuz?</html>",
-                        "Araç Sil",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE
-                );
+                if (kiradaGorunumu) {
+                    // ── Kiralama İptal ────────────────────────────────────
+                    Object idObj  = tableModel.getValueAt(row, 0);
+                    Object marka  = tableModel.getValueAt(row, 1);
+                    Object model  = tableModel.getValueAt(row, 2);
+                    Object musteri = tableModel.getValueAt(row, 3);
 
-                if (secim == JOptionPane.YES_OPTION) {
-                    int id = Integer.parseInt(idObj.toString());
-                    aracService.aracSil(id);
-                    tabloyuYenile();
+                    int secim = JOptionPane.showConfirmDialog(
+                            MainFrame.this,
+                            "<html><b>" + marka + " " + model + "</b> aracının<br>"
+                                    + "<b>" + musteri + "</b> adlı müşteriye ait kiralamasını iptal etmek istiyor musunuz?</html>",
+                            "Kiralama İptal",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    if (secim == JOptionPane.YES_OPTION) {
+                        int aracId = Integer.parseInt(idObj.toString());
+                        kiralamaService.kiralamaIptalEt(aracId);
+                        // Araç müsaitlik durumu değişti — araç dosyasını güncelle
+                        new DosyaService().araclariKaydet(aracService.getAracListesi());
+                        kiradakiAraclariGoster();
+                    }
+
+                } else {
+                    // ── Araç Sil ──────────────────────────────────────────
+                    Object idObj = tableModel.getValueAt(row, 0);
+                    Object marka = tableModel.getValueAt(row, 1);
+                    Object model = tableModel.getValueAt(row, 2);
+
+                    int secim = JOptionPane.showConfirmDialog(
+                            MainFrame.this,
+                            "<html><b>" + marka + " " + model + "</b> aracını silmek istiyor musunuz?</html>",
+                            "Araç Sil",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    if (secim == JOptionPane.YES_OPTION) {
+                        int id = Integer.parseInt(idObj.toString());
+                        aracService.aracSil(id);
+                        tabloyuYenile();
+                    }
                 }
             }
         });
@@ -241,6 +280,7 @@ public class MainFrame extends JFrame {
         kiralaBtn.addActionListener(e -> aracKirala());
         musaitBtn.addActionListener(e -> {
             tableTitleLabel.setText("Müsait Araçlar");
+            setStandardColumns();
             tableModel.setRowCount(0);
             for (Arac a : aracService.musaitAraclariGetir())
                 tableModel.addRow(tableRow(a, "Müsait"));
@@ -441,18 +481,45 @@ public class MainFrame extends JFrame {
         }
     }
 
+    /** Tüm / müsait araçlar için standart 5 sütunlu görünüm */
+    private void setStandardColumns() {
+        tableModel.setColumnCount(0);
+        for (String col : new String[]{"ID", "Marka", "Model", "Fiyat (Günlük)", "Müsaitlik"})
+            tableModel.addColumn(col);
+        int[] cw = {65, 155, 155, 155, 120};
+        for (int i = 0; i < cw.length; i++)
+            aracTable.getColumnModel().getColumn(i).setPreferredWidth(cw[i]);
+    }
+
+    /** Kiradaki araçlar için 6 sütunlu görünüm */
+    private void setKiradaColumns() {
+        tableModel.setColumnCount(0);
+        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsaitlik Tarihi"})
+            tableModel.addColumn(col);
+        int[] cw = {55, 130, 130, 120, 140, 155};
+        for (int i = 0; i < cw.length; i++)
+            aracTable.getColumnModel().getColumn(i).setPreferredWidth(cw[i]);
+    }
+
     private void tabloyuYenile() {
+        setStandardColumns();
         tableModel.setRowCount(0);
         for (Arac a : aracService.getAracListesi())
             tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
     }
 
     private void kiradakiAraclariGoster() {
+        setKiradaColumns();
         tableModel.setRowCount(0);
         for (Kiralama k : kiralamaService.getKiralamaListesi())
-            tableModel.addRow(new Object[]{k.getArac().getId(), k.getArac().getMarka(),
-                    k.getArac().getModel(), k.getMusteri().getAdSoyad(),
-                    k.getKiralamaTarihi(), k.getGunSayisi(), k.getKalanGun()});
+            tableModel.addRow(new Object[]{
+                    k.getArac().getId(),
+                    k.getArac().getMarka(),
+                    k.getArac().getModel(),
+                    k.getMusteri().getAdSoyad(),
+                    k.getKiralamaTarihiStr(),
+                    k.getMusaitOlacakTarihStr()
+            });
     }
 
     private void temizle() {
