@@ -1,4 +1,3 @@
-1,volkswagen,passat,450.0,false
 2,peugeot,208,200.0,true
-3,nissan,micra,150.0,true
 4,audi,a5,500.0,true
+1,volkswagen,tiguan,450.0,true
