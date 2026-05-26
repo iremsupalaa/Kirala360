@@ -92,7 +92,7 @@ public class LoginFrame extends JFrame {
         hataMesaji.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Giriş butonu
-        MainFrame.RoundButton girisBtn = new MainFrame.RoundButton(
+        UIFactory.RoundButton girisBtn = new UIFactory.RoundButton(
                 "  Giriş Yap", ACCENT, Color.WHITE, null, 20);
         girisBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         girisBtn.setAlignmentX(Component.LEFT_ALIGNMENT);

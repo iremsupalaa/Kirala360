@@ -1,5 +1,11 @@
 2,peugeot,208,200.0,true
 4,audi,a5,500.0,true
 1,volkswagen,tiguan,450.0,true
-3,fosfagen,kedi mayneli ayar veriş,19.0,true
-5,bemewe,besyirmi,5200.0,true
+3,peugeot,508,345.0,true
+5,bmw,520,450.0,false
+6,mercedes-benz,a180,600.0,true
+7,fiat,egea,200.0,true
+8,nissan,micra,100.0,false
+9,togg,t10x,300.0,true
+10,citroen,c4 aircross,260.0,true
+11,peugeot,3008,400.0,true
