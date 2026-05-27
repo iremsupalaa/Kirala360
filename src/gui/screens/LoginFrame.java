@@ -1,4 +1,7 @@
-package gui;
+package gui.screens;
+
+import gui.UIFactory;
+import gui.screens.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

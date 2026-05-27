@@ -1,4 +1,4 @@
-package gui;
+package gui.theme;
 
 import java.awt.Color;
 

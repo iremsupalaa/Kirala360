@@ -1,5 +1,6 @@
 package gui;
 
+import gui.theme.AppColors;
 import models.Arac;
 import models.Kiralama;
 

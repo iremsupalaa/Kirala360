@@ -6,6 +6,5 @@
 6,mercedes-benz,a180,600.0,true
 7,fiat,egea,200.0,true
 8,nissan,micra,100.0,false
-9,togg,t10x,300.0,true
 10,citroen,c4 aircross,260.0,true
 11,peugeot,3008,400.0,true
