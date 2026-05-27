@@ -1,10 +1,10 @@
 package gui.components.table;
 
-import gui.components.badges.StatusBadge;
 import gui.theme.AppColors;
 import gui.theme.AppFonts;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
@@ -12,80 +12,46 @@ public class TableCellRenderer extends DefaultTableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(
-            JTable table,
-            Object value,
-            boolean isSelected,
-            boolean hasFocus,
-            int row,
-            int column
-    ) {
+            JTable table, Object value,
+            boolean isSelected, boolean hasFocus,
+            int row, int column) {
 
-        Component c = super.getTableCellRendererComponent(
-                table,
-                value,
-                isSelected,
-                hasFocus,
-                row,
-                column
-        );
+        JLabel label = (JLabel) super.getTableCellRendererComponent(
+                table, value, isSelected, hasFocus, row, column);
 
-        setBorder(BorderFactory.createEmptyBorder(
-                0,
-                16,
-                0,
-                16
-        ));
+        label.setFont(AppFonts.TABLE_CELL);
+        label.setBorder(new EmptyBorder(0, 18, 0, 10));
+        label.setOpaque(true);
 
-        setFont(AppFonts.BODY);
+        // ── Arka plan rengi: seçili > hover > zebra ───────────────────────────
+        if (isSelected) {
+            label.setBackground(table.getSelectionBackground());
+            label.setForeground(table.getSelectionForeground());
+        } else {
+            boolean isHovered = (table instanceof ModernTable)
+                    && ((ModernTable) table).getHoveredRow() == row;
 
-        setHorizontalAlignment(
-                column == 0
-                        ? CENTER
-                        : LEFT
-        );
-
-        if (!isSelected) {
-
-            setBackground(
-                    row % 2 == 0
-                            ? AppColors.ROW_EVEN
-                            : AppColors.ROW_ODD
-            );
-
-            setForeground(AppColors.TITLE_FG);
+            if (isHovered) {
+                label.setBackground(AppColors.ROW_HOVER);
+            } else {
+                label.setBackground(row % 2 == 0
+                        ? AppColors.ROW_EVEN : AppColors.ROW_ODD);
+            }
+            label.setForeground(AppColors.TITLE_FG);
         }
 
-        // STATUS BADGE
-        if (
-                column == 4
-                        && value != null
-                        && table.getColumnCount() == 5
-        ) {
-
-            JPanel wrap = new JPanel(
-                    new GridBagLayout()
-            );
-
-            wrap.setOpaque(true);
-
-            wrap.setBackground(
-                    row % 2 == 0
-                            ? AppColors.ROW_EVEN
-                            : AppColors.ROW_ODD
-            );
-
-            boolean musait =
-                    value.toString().equals("Müsait");
-
-            wrap.add(
-                    musait
-                            ? StatusBadge.musait()
-                            : StatusBadge.kirada()
-            );
-
-            return wrap;
+        // ── Müsaitlik sütununa özel renklendirme ──────────────────────────────
+        if (value instanceof String) {
+            String text = (String) value;
+            if ("Müsait".equals(text)) {
+                label.setForeground(AppColors.MUSAIT_FG);
+                label.setFont(AppFonts.TABLE_CELL.deriveFont(Font.BOLD));
+            } else if ("Kirada".equals(text)) {
+                label.setForeground(AppColors.KIRADA_FG);
+                label.setFont(AppFonts.TABLE_CELL.deriveFont(Font.BOLD));
+            }
         }
 
-        return c;
+        return label;
     }
 }
