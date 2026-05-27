@@ -1,5 +1,8 @@
-package gui;
+package gui.screens;
 
+import gui.IstatistikDialog;
+import gui.UIFactory;
+import gui.theme.AppColors;
 import models.Arac;
 import models.Kiralama;
 import models.Musteri;
@@ -9,14 +12,20 @@ import services.KiralamaService;
 import services.SiralamaService;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import gui.components.buttons.GradientButton;
+import gui.components.inputs.ModernTextField;
+import gui.components.table.ModernScrollBarUI;
+import gui.components.table.ModernTable;
+import gui.components.card.StatsCard;
+import gui.components.table.ActionCellRenderer;
+import gui.components.table.ActionCellEditor;
+import gui.components.table.TableStyler;
+import gui.components.inputs.FormGroup;
 
 public class MainFrame extends JFrame {
 
@@ -30,9 +39,12 @@ public class MainFrame extends JFrame {
     private JTextField kiralamaIdField, musteriField, gunField;
 
     // ── Tablo ─────────────────────────────────────────────────────────────────
-    private JTable            aracTable;
+    private JTable aracTable;
     private DefaultTableModel tableModel;
-    private JLabel            tableTitleLabel;
+    private JLabel tableTitleLabel;
+    private JLabel toplamAracLabel;
+    private JLabel musaitAracLabel;
+    private JLabel toplamFiyatLabel;
 
     // ── Filtre ────────────────────────────────────────────────────────────────
     private JTextField aramaField, minFiyatField, maxFiyatField;
@@ -46,7 +58,7 @@ public class MainFrame extends JFrame {
         siralamaService = new SiralamaService();
 
         setTitle("Araç Kiralama Sistemi");
-        setSize(1100, 840);
+        setSize(1200, 840);
         setMinimumSize(new Dimension(1100, 900));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -56,6 +68,7 @@ public class MainFrame extends JFrame {
         add(root);
 
         buildTitle(root);
+        buildStatsCards(root);
         buildSolPanel(root);
         buildTabloPanel(root);
         buildAltButonlar(root);
@@ -75,6 +88,39 @@ public class MainFrame extends JFrame {
         title.setBounds(0, 14, 1100, 44);
         root.add(title);
     }
+    private void buildStatsCards(JPanel root) {
+        StatsCard toplamCard = new StatsCard(
+                "Toplam Araç",
+                "0",
+                new Color(235, 243, 255),
+                new Color(45, 120, 255)
+        );
+        toplamCard.setBounds(760, 18, 120, 72);
+        toplamAracLabel = (JLabel) toplamCard.getComponent(0);
+        root.add(toplamCard);
+        // ─────────────────────────────
+        StatsCard musaitCard = new StatsCard(
+                "Müsait",
+                "0",
+                new Color(230, 250, 235),
+                new Color(22, 163, 74)
+        );
+        musaitCard.setBounds(890, 18, 120, 72);
+        musaitAracLabel = (JLabel) musaitCard.getComponent(0);
+        root.add(musaitCard);
+        // ─────────────────────────────
+        StatsCard fiyatCard = new StatsCard(
+                "Toplam Değer",
+                "0 ₺",
+                new Color(255, 245, 225),
+                new Color(210, 120, 20)
+        );
+        toplamCard.setBounds(700, 18, 120, 72);
+        musaitCard.setBounds(830, 18, 120, 72);
+        fiyatCard.setBounds(960, 18, 140, 72);
+        toplamFiyatLabel = (JLabel) fiyatCard.getComponent(0);
+        root.add(fiyatCard);
+    }
 
     private void buildSolPanel(JPanel root) {
         // ── Araç Ekle kartı ──────────────────────────────────────────────────
@@ -85,13 +131,42 @@ public class MainFrame extends JFrame {
         ekleCard.add(UIFactory.headerLabel("Araç Ekle", new UIFactory.CarIcon(15, AppColors.ACCENT)));
         ekleCard.add(UIFactory.blueLine());
         ekleCard.add(UIFactory.vgap(10));
-        idField    = UIFactory.inputRow(ekleCard, "ID:");
-        markaField = UIFactory.inputRow(ekleCard, "Marka:");
-        modelField = UIFactory.inputRow(ekleCard, "Model:");
-        fiyatField = UIFactory.inputRow(ekleCard, "Fiyat (Günlük):");
+        FormGroup idGroup =
+                new FormGroup("ID", "Araç ID");
+
+        FormGroup markaGroup =
+                new FormGroup("Marka", "BMW");
+
+        FormGroup modelGroup =
+                new FormGroup("Model", "320i");
+
+        FormGroup fiyatGroup =
+                new FormGroup("Fiyat", "1500");
+
+        idField = idGroup.getField();
+        markaField = markaGroup.getField();
+        modelField = modelGroup.getField();
+        fiyatField = fiyatGroup.getField();
+
+        ekleCard.add(idGroup);
+        ekleCard.add(UIFactory.vgap(10));
+
+        ekleCard.add(markaGroup);
+        ekleCard.add(UIFactory.vgap(10));
+
+        ekleCard.add(modelGroup);
+        ekleCard.add(UIFactory.vgap(10));
+
+        ekleCard.add(fiyatGroup);
         ekleCard.add(UIFactory.vgap(4));
-        JButton ekleBtn = UIFactory.pillButton("  Araç Ekle", AppColors.BTN_EKLE,
-                Color.WHITE, new UIFactory.PlusIcon(13, Color.WHITE));
+        GradientButton ekleBtn = new GradientButton(
+                "Araç Ekle",
+                new Color(45, 120, 255),
+                new Color(20, 90, 220)
+        );
+        ekleBtn.setMaximumSize(
+                new Dimension(Integer.MAX_VALUE, 42)
+        );
         ekleCard.add(ekleBtn);
         ekleBtn.addActionListener(e -> aracEkle());
 
@@ -103,12 +178,32 @@ public class MainFrame extends JFrame {
         kiralaCard.add(UIFactory.headerLabel("Araç Kirala", new UIFactory.PersonIcon(15, AppColors.ACCENT)));
         kiralaCard.add(UIFactory.blueLine());
         kiralaCard.add(UIFactory.vgap(10));
-        kiralamaIdField = UIFactory.inputRow(kiralaCard, "Araç ID:");
-        musteriField    = UIFactory.inputRow(kiralaCard, "Müşteri:");
-        gunField        = UIFactory.inputRow(kiralaCard, "Gün:");
+        FormGroup aracIdGroup =
+                new FormGroup("Araç ID", "1");
+
+        FormGroup musteriGroup =
+                new FormGroup("Müşteri", "İsim");
+
+        FormGroup gunGroup =
+                new FormGroup("Gün", "7");
+
+        kiralamaIdField = aracIdGroup.getField();
+        musteriField = musteriGroup.getField();
+        gunField = gunGroup.getField();
+
+        kiralaCard.add(aracIdGroup);
+        kiralaCard.add(UIFactory.vgap(10));
+
+        kiralaCard.add(musteriGroup);
+        kiralaCard.add(UIFactory.vgap(10));
+
+        kiralaCard.add(gunGroup);
         kiralaCard.add(UIFactory.vgap(4));
-        JButton kiralaBtn = UIFactory.pillButton("  Araç Kirala", AppColors.BTN_KIRALA,
-                Color.WHITE, new UIFactory.SmallCarIcon(13, Color.WHITE));
+        GradientButton kiralaBtn = new GradientButton(
+                "Araç Kirala",
+                new Color(34, 197, 94),
+                new Color(22, 163, 74)
+        );
         kiralaCard.add(kiralaBtn);
         kiralaBtn.addActionListener(e -> aracKirala());
     }
@@ -120,77 +215,35 @@ public class MainFrame extends JFrame {
         root.add(tableCard);
 
         // Tablo modeli
-        String[] cols = {"ID", "Marka", "Model", "Fiyat (Günlük)", "Müsaitlik"};
+        String[] cols = {
+                "ID",
+                "Marka",
+                "Model",
+                "Fiyat (Günlük)",
+                "Müsaitlik",
+                "İşlemler"
+        };
         tableModel = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        aracTable = new JTable(tableModel);
-        aracTable.setRowHeight(38);
-        aracTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        aracTable.setGridColor(AppColors.GRID);
-        aracTable.setShowGrid(true);
-        aracTable.setIntercellSpacing(new Dimension(0, 0));
-        aracTable.setSelectionBackground(new Color(200, 220, 255));
-        aracTable.setSelectionForeground(AppColors.TITLE_FG);
-        aracTable.setBackground(AppColors.CARD_BG);
-        aracTable.setFocusable(false);
-        aracTable.setFillsViewportHeight(true);
-
-        int[] cw = {65, 155, 155, 155, 120};
-        for (int i = 0; i < cw.length; i++)
-            aracTable.getColumnModel().getColumn(i).setPreferredWidth(cw[i]);
-
-        // Header
-        JTableHeader th = aracTable.getTableHeader();
-        th.setFont(new Font("SansSerif", Font.BOLD, 14));
-        th.setBackground(AppColors.TH_BG);
-        th.setForeground(AppColors.TH_FG);
-        th.setPreferredSize(new Dimension(0, 40));
-        th.setReorderingAllowed(false);
-        th.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, AppColors.GRID));
-
-        DefaultTableCellRenderer headerRend = new DefaultTableCellRenderer() {
-            @Override public Component getTableCellRendererComponent(
-                    JTable t, Object v, boolean s, boolean f, int r, int c) {
-                super.getTableCellRendererComponent(t, v, s, f, r, c);
-                setBackground(AppColors.TH_BG); setForeground(AppColors.TH_FG);
-                setFont(new Font("SansSerif", Font.BOLD, 14));
-                setBorder(new EmptyBorder(0, 14, 0, 8));
-                return this;
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return c == getColumnCount() - 1;
             }
         };
-        for (int i = 0; i < cols.length; i++)
-            aracTable.getColumnModel().getColumn(i).setHeaderRenderer(headerRend);
+        aracTable = new ModernTable();
+        aracTable.setModel(tableModel);
 
-        // Hücre renderer
-        aracTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override public Component getTableCellRendererComponent(
-                    JTable t, Object v, boolean sel, boolean foc, int row, int col) {
-                super.getTableCellRendererComponent(t, v, sel, foc, row, col);
-                setBorder(new EmptyBorder(0, 14, 0, 8));
-                if (!sel) {
-                    setBackground(row % 2 == 0 ? AppColors.ROW_EVEN : AppColors.ROW_ODD);
-                    setForeground(AppColors.TITLE_FG);
-                }
-                setFont(new Font("SansSerif", Font.PLAIN, 14));
-                setHorizontalAlignment(col == 0 ? CENTER : LEFT);
-                // Müsaitlik sütunu (standart 5 sütun)
-                if (col == 4 && v != null && t.getColumnCount() == 5) {
-                    setHorizontalAlignment(CENTER);
-                    setFont(new Font("SansSerif", Font.BOLD, 13));
-                    boolean m = "Müsait".equals(v.toString());
-                    if (!sel) { setBackground(m ? AppColors.MUSAIT_BG : AppColors.KIRADA_BG);
-                        setForeground(m ? AppColors.MUSAIT_FG : AppColors.KIRADA_FG); }
-                }
-                // Müsait olacağı tarih (kirada 6 sütun)
-                if (col == 5 && v != null && t.getColumnCount() == 6) {
-                    setHorizontalAlignment(CENTER);
-                    if (!sel) { setBackground(new Color(255, 243, 180));
-                        setForeground(new Color(150, 100, 0)); }
-                }
-                return this;
-            }
-        });
+        aracTable.getColumnModel()
+                .getColumn(5)
+                .setCellRenderer(
+                        new ActionCellRenderer()
+                );
+
+        aracTable.getColumnModel()
+                .getColumn(5)
+                .setCellEditor(
+                        new ActionCellEditor()
+                );
+
 
         // Kuzey panel: başlık + filtre barı
         tableCard.add(buildNorthPanel(), BorderLayout.NORTH);
@@ -202,17 +255,22 @@ public class MainFrame extends JFrame {
                 int row = aracTable.rowAtPoint(e.getPoint());
                 if (row < 0) return;
                 aracTable.setRowSelectionInterval(row, row);
-                if (tableModel.getColumnCount() == 6) onKiralamaIptal(row);
+                if (aktifGorunum.equals("kirada")) onKiralamaIptal(row);
                 else                                  onAracSil(row);
             }
         });
 
         JScrollPane scroll = new JScrollPane(aracTable);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.getViewport().setBackground(AppColors.CARD_BG);
+        TableStyler.setColumnWidths(
+                aracTable,
+                65, 145, 145, 145, 120, 120
+        );
+        TableStyler.styleTable(
+                aracTable,
+                scroll
+        );
         tableCard.add(scroll, BorderLayout.CENTER);
     }
-
     private JPanel buildNorthPanel() {
         JPanel north = new JPanel();
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
@@ -233,9 +291,12 @@ public class MainFrame extends JFrame {
         filterBar.setOpaque(false);
         filterBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, AppColors.GRID));
 
-        aramaField    = filterTextField(160);
-        minFiyatField = filterTextField(80);
-        maxFiyatField = filterTextField(80);
+        aramaField = new ModernTextField("Marka veya model ara");
+        aramaField.setPreferredSize(new Dimension(160, 36));
+        minFiyatField = new ModernTextField("Min");
+        minFiyatField.setPreferredSize(new Dimension(80, 36));
+        maxFiyatField = new ModernTextField("Max");
+        maxFiyatField.setPreferredSize(new Dimension(80, 36));
 
         UIFactory.RoundButton filtreBtn  = new UIFactory.RoundButton("Ara", AppColors.ACCENT,
                 Color.WHITE, new UIFactory.SearchIcon(12, Color.WHITE), 8);
@@ -389,20 +450,64 @@ public class MainFrame extends JFrame {
 
     private void setStandardColumns() {
         tableModel.setColumnCount(0);
-        for (String col : new String[]{"ID", "Marka", "Model", "Fiyat (Günlük)", "Müsaitlik"})
+        for (String col : new String[]{
+                "ID",
+                "Marka",
+                "Model",
+                "Fiyat (Günlük)",
+                "Müsaitlik",
+                "İşlemler"
+        }) {
             tableModel.addColumn(col);
-        int[] cw = {65, 155, 155, 155, 120};
-        for (int i = 0; i < cw.length; i++)
-            aracTable.getColumnModel().getColumn(i).setPreferredWidth(cw[i]);
+        }
+        TableStyler.setColumnWidths(
+                aracTable,
+                65, 145, 145, 145, 120, 120
+        );
+        aracTable.getColumnModel()
+                .getColumn(5)
+                .setCellRenderer(
+                        new ActionCellRenderer()
+                );
+        aracTable.getColumnModel()
+                .getColumn(5)
+                .setCellEditor(
+                        new ActionCellEditor()
+                );
     }
 
     private void setKiradaColumns() {
+
         tableModel.setColumnCount(0);
-        for (String col : new String[]{"ID", "Marka", "Model", "Müşteri", "Kiralandığı Tarih", "Müsaitlik Tarihi"})
+
+        for (String col : new String[]{
+                "ID",
+                "Marka",
+                "Model",
+                "Müşteri",
+                "Kiralandığı Tarih",
+                "Müsaitlik Tarihi",
+                "İşlemler"
+        }) {
             tableModel.addColumn(col);
-        int[] cw = {55, 130, 130, 120, 140, 155};
-        for (int i = 0; i < cw.length; i++)
-            aracTable.getColumnModel().getColumn(i).setPreferredWidth(cw[i]);
+        }
+
+        TableStyler.setColumnWidths(
+                aracTable,
+                55, 120, 120, 120, 140, 140, 100
+        );
+
+        aracTable.getColumnModel()
+                .getColumn(6)
+                .setCellRenderer(
+                        new ActionCellRenderer()
+                );
+
+        aracTable.getColumnModel()
+                .getColumn(6)
+                .setCellEditor(
+                        new ActionCellEditor()
+                );
     }
 
     private void tabloyuYenile() {
@@ -412,6 +517,7 @@ public class MainFrame extends JFrame {
         tableModel.setRowCount(0);
         for (Arac a : aracService.getAracListesi())
             tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
+        updateStats();
     }
 
     private void musaitAraclariGoster() {
@@ -432,8 +538,13 @@ public class MainFrame extends JFrame {
         tableModel.setRowCount(0);
         for (Kiralama k : kiralamaService.getKiralamaListesi())
             tableModel.addRow(new Object[]{
-                    k.getArac().getId(), k.getArac().getMarka(), k.getArac().getModel(),
-                    k.getMusteri().getAdSoyad(), k.getKiralamaTarihiStr(), k.getMusaitOlacakTarihStr()
+                    k.getArac().getId(),
+                    k.getArac().getMarka(),
+                    k.getArac().getModel(),
+                    k.getMusteri().getAdSoyad(),
+                    k.getKiralamaTarihiStr(),
+                    k.getMusaitOlacakTarihStr(),
+                    ""
             });
     }
 
@@ -475,12 +586,31 @@ public class MainFrame extends JFrame {
         tabloyuYenile();
     }
 
+    private void updateStats() {
+        ArrayList<Arac> liste =
+                aracService.getAracListesi();
+        toplamAracLabel.setText(
+                String.valueOf(liste.size())
+        );
+        long musait = liste.stream().filter(Arac::isMusaitMi).count();
+        musaitAracLabel.setText(String.valueOf(musait));
+        double toplam = liste.stream().mapToDouble(Arac::getGunlukFiyat).sum();
+        toplamFiyatLabel.setText(fmt(toplam));
+    }
+
     // ════════════════════════════════════════════════════════════════════════
     // YARDIMCI METODLAR
     // ════════════════════════════════════════════════════════════════════════
 
     private Object[] tableRow(Arac a, String durum) {
-        return new Object[]{a.getId(), a.getMarka(), a.getModel(), fmt(a.getGunlukFiyat()), durum};
+        return new Object[]{
+                a.getId(),
+                a.getMarka(),
+                a.getModel(),
+                fmt(a.getGunlukFiyat()),
+                durum,
+                ""
+        };
     }
 
     private void temizle() {
@@ -507,13 +637,4 @@ public class MainFrame extends JFrame {
         return l;
     }
 
-    private JTextField filterTextField(int width) {
-        JTextField f = new JTextField();
-        f.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        f.setPreferredSize(new Dimension(width, 28));
-        f.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(AppColors.INPUT_BDR, 1),
-                new EmptyBorder(2, 7, 2, 7)));
-        return f;
-    }
 }

@@ -1,9 +1,13 @@
 package gui;
 
+import gui.theme.AppColors;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
+import gui.theme.Shadows;
+import gui.components.inputs.ModernTextField;
 
 /**
  * Tekrar kullanılabilir UI bileşenleri: RoundCard, RoundButton, ikonlar, yardımcı factory metodları.
@@ -27,8 +31,7 @@ public class UIFactory {
         @Override protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(0, 0, 0, 15));
-            g2.fill(new RoundRectangle2D.Float(2, 3, getWidth()-3, getHeight()-2, r+2, r+2));
+            Shadows.drawShadow(g2, getWidth(), getHeight(), r);
             g2.setColor(AppColors.CARD_BG);
             g2.fill(new RoundRectangle2D.Float(0, 0, getWidth()-2, getHeight()-2, r, r));
             g2.setColor(AppColors.CARD_BDR);
@@ -122,7 +125,8 @@ public class UIFactory {
         label.setForeground(AppColors.LABEL_FG);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JTextField field = new JTextField();
+        ModernTextField field =
+                new ModernTextField(labelText);
         field.setFont(new Font("SansSerif", Font.PLAIN, 14));
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
