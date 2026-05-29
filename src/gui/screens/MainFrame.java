@@ -4,6 +4,7 @@ import gui.IstatistikDialog;
 import gui.UIFactory;
 import gui.components.ToastNotification;
 import gui.theme.AppColors;
+import gui.theme.AppFonts;
 import models.Arac;
 import models.Kiralama;
 import models.Musteri;
@@ -11,7 +12,6 @@ import services.AracService;
 import services.DosyaService;
 import services.KiralamaService;
 import services.SiralamaService;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -26,6 +26,7 @@ import gui.components.card.StatsCard;
 import gui.components.table.ActionCellRenderer;
 import gui.components.table.ActionCellEditor;
 import gui.components.table.TableStyler;
+import gui.theme.AppFonts;
 import gui.components.inputs.FormGroup;
 
 public class MainFrame extends JFrame {
@@ -137,7 +138,7 @@ public class MainFrame extends JFrame {
         JLabel logoLabel = new JLabel(new ImageIcon(scaled));
 
         JLabel title = new JLabel(titleText);
-        title.setFont(new Font("SansSerif", Font.BOLD, 28));
+        title.setFont(AppFonts.TITLE);
         title.setForeground(AppColors.TITLE_FG);
 
         titlePanel.add(logoLabel);
@@ -305,7 +306,7 @@ public class MainFrame extends JFrame {
         TableStyler.styleTable(aracTable, scroll);
 
         emptyLabel = new JLabel("Araç bulunamadı", SwingConstants.CENTER);
-        emptyLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        emptyLabel.setFont(AppFonts.BODY);
         emptyLabel.setForeground(new Color(160, 168, 190));
         emptyLabel.setVisible(false);
 
@@ -339,7 +340,7 @@ public class MainFrame extends JFrame {
         titleBar.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, AppColors.GRID));
         tableTitleLabel = new JLabel("Tüm Araçlar");
-        tableTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        tableTitleLabel.setFont(AppFonts.TITLE);
         tableTitleLabel.setForeground(AppColors.TITLE_FG);
         titleBar.add(tableTitleLabel);
         north.add(titleBar);
@@ -350,7 +351,7 @@ public class MainFrame extends JFrame {
         filterBar.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, AppColors.GRID));
 
-        aramaField    = new ModernTextField("Marka veya model ara");
+        aramaField    = new ModernTextField("Marka/Model Ara");
         minFiyatField = new ModernTextField("Min");
         maxFiyatField = new ModernTextField("Max");
         aramaField.setPreferredSize(new Dimension(160, 36));
@@ -368,7 +369,7 @@ public class MainFrame extends JFrame {
 
         // Durum filtresi dropdown
         durumFiltre = new JComboBox<>(new String[]{"Tüm Durumlar", "Müsait", "Kirada"});
-        durumFiltre.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        durumFiltre.setFont(AppFonts.BODY);
         durumFiltre.setPreferredSize(new java.awt.Dimension(120, 36));
 
         filterBar.add(filterLabel("Marka / Model:"));
@@ -808,7 +809,7 @@ public class MainFrame extends JFrame {
 
     private JLabel filterLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        l.setFont(AppFonts.TABLE_CELL);
         l.setForeground(AppColors.LABEL_FG);
         return l;
     }

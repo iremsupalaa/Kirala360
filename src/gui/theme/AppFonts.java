@@ -1,46 +1,81 @@
 package gui.theme;
 
 import java.awt.Font;
+import java.io.InputStream;
 
-/**
- * Uygulama genel font sistemi.
- */
 public class AppFonts {
+
+    private static Font REGULAR;
+    private static Font MEDIUM;
+    private static Font BOLD;
+
+    static {
+        try {
+
+            REGULAR = Font.createFont(
+                    Font.TRUETYPE_FONT,
+                    AppFonts.class.getResourceAsStream(
+                            "/assets/fonts/Montserrat/static/Montserrat-Regular.ttf"
+                    )
+            );
+
+            MEDIUM = Font.createFont(
+                    Font.TRUETYPE_FONT,
+                    AppFonts.class.getResourceAsStream(
+                            "/assets/fonts/Montserrat/static/Montserrat-Medium.ttf"
+                    )
+            );
+
+            BOLD = Font.createFont(
+                    Font.TRUETYPE_FONT,
+                    AppFonts.class.getResourceAsStream(
+                            "/assets/fonts/Montserrat/static/Montserrat-Bold.ttf"
+                    )
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            REGULAR = new Font("SansSerif", Font.PLAIN, 14);
+            MEDIUM  = new Font("SansSerif", Font.BOLD, 14);
+            BOLD    = new Font("SansSerif", Font.BOLD, 14);
+        }
+    }
 
     // Başlıklar
     public static final Font TITLE =
-            new Font("SansSerif", Font.BOLD, 26);
+            BOLD.deriveFont(26f);
 
     public static final Font SUBTITLE =
-            new Font("SansSerif", Font.BOLD, 18);
+            BOLD.deriveFont(18f);
 
     public static final Font SECTION =
-            new Font("SansSerif", Font.BOLD, 15);
+            BOLD.deriveFont(15f);
 
     // İçerik
     public static final Font BODY =
-            new Font("SansSerif", Font.PLAIN, 13);
+            REGULAR.deriveFont(13f);
 
     public static final Font BODY_MEDIUM =
-            new Font("SansSerif", Font.BOLD, 13);
+            MEDIUM.deriveFont(13f);
 
     public static final Font SMALL =
-            new Font("SansSerif", Font.PLAIN, 11);
+            REGULAR.deriveFont(11f);
 
     // Buton
     public static final Font BUTTON =
-            new Font("SansSerif", Font.BOLD, 14);
+            MEDIUM.deriveFont(14f);
 
     // Tablo
     public static final Font TABLE_HEADER =
-            new Font("SansSerif", Font.BOLD, 13);
+            BOLD.deriveFont(13f);
 
     public static final Font TABLE_CELL =
-            new Font("SansSerif", Font.PLAIN, 13);
+            REGULAR.deriveFont(13f);
 
     // Badge
     public static final Font BADGE =
-            new Font("SansSerif", Font.BOLD, 12);
+            MEDIUM.deriveFont(12f);
 
     private AppFonts() {}
 }
