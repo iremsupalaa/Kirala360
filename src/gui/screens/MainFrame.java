@@ -57,13 +57,36 @@ public class MainFrame extends JFrame {
     // ── Boş tablo mesajı ──────────────────────────────────────────────────────
     private JLabel emptyLabel;
 
+    // ── Aktif kullanıcı (başlık çubuğu için) ─────────────────────────────────
+    private String aktifKullanici = "";
+
+    // ── Durum filtresi dropdown ───────────────────────────────────────────────
+    private JComboBox<String> durumFiltre;
+
     // ═════════════════════════════════════════════════════════════════════════
+    // Eski constructor (geriye dönük uyumluluk)
     public MainFrame() {
-        aracService     = new AracService();
-        kiralamaService = new KiralamaService(aracService.getAracListesi());
+        this(null, null, "");
+    }
+
+    // Yeni constructor: LoginFrame'den yüklü veriyle açılır
+    public MainFrame(java.util.ArrayList<models.Arac> araclar,
+                     java.util.ArrayList<models.Kiralama> kiralamalar,
+                     String kullanici) {
+        this.aktifKullanici = kullanici;
+        if (araclar != null) {
+            aracService     = new AracService(araclar);
+            kiralamaService = new KiralamaService(araclar, kiralamalar);
+        } else {
+            aracService     = new AracService();
+            kiralamaService = new KiralamaService(aracService.getAracListesi());
+        }
         siralamaService = new SiralamaService();
 
-        setTitle("Araç Kiralama Sistemi");
+        setTitle("Kirala360");
+        Image appIcon = Toolkit.getDefaultToolkit()
+                .getImage(getClass().getResource("/assets/kirala360.png"));
+        setIconImage(appIcon);
         setMinimumSize(new Dimension(1100, 820));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -99,10 +122,28 @@ public class MainFrame extends JFrame {
         north.setBorder(BorderFactory.createEmptyBorder(36, 24, 8, 24));
 
         // Başlık (sol)
-        JLabel title = new JLabel("Araç Kiralama Sistemi");
+        String titleText = aktifKullanici != null && !aktifKullanici.isEmpty()
+                ? "Kirala360  |  " + aktifKullanici
+                : "Kirala360";
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        titlePanel.setOpaque(false);
+
+        ImageIcon logoIcon = new ImageIcon(
+                getClass().getResource("/assets/kirala360.png"));
+
+        Image scaled = logoIcon.getImage()
+                .getScaledInstance(42, 42, Image.SCALE_SMOOTH);
+
+        JLabel logoLabel = new JLabel(new ImageIcon(scaled));
+
+        JLabel title = new JLabel(titleText);
         title.setFont(new Font("SansSerif", Font.BOLD, 28));
         title.setForeground(AppColors.TITLE_FG);
-        north.add(title, BorderLayout.WEST);
+
+        titlePanel.add(logoLabel);
+        titlePanel.add(title);
+
+        north.add(titlePanel, BorderLayout.WEST);
 
         // Stats kartları (sağ)
         JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -325,12 +366,19 @@ public class MainFrame extends JFrame {
                 new Color(230, 232, 240), AppColors.LABEL_FG, null, 8);
         temizleBtn.setPreferredSize(new Dimension(95, 28));
 
+        // Durum filtresi dropdown
+        durumFiltre = new JComboBox<>(new String[]{"Tüm Durumlar", "Müsait", "Kirada"});
+        durumFiltre.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        durumFiltre.setPreferredSize(new java.awt.Dimension(120, 36));
+
         filterBar.add(filterLabel("Marka / Model:"));
         filterBar.add(aramaField);
         filterBar.add(filterLabel("Min ₺:"));
         filterBar.add(minFiyatField);
         filterBar.add(filterLabel("Max ₺:"));
         filterBar.add(maxFiyatField);
+        filterBar.add(filterLabel("Durum:"));
+        filterBar.add(durumFiltre);
         filterBar.add(filtreBtn);
         filterBar.add(temizleBtn);
         north.add(filterBar);
@@ -340,6 +388,7 @@ public class MainFrame extends JFrame {
         aramaField.addActionListener(e -> filtreUygula());
         minFiyatField.addActionListener(e -> filtreUygula());
         maxFiyatField.addActionListener(e -> filtreUygula());
+        durumFiltre.addActionListener(e -> filtreUygula());
 
         return north;
     }
@@ -372,19 +421,30 @@ public class MainFrame extends JFrame {
         row1.add(tumBtn);
         row1.add(kiradaBtn);
 
-        // 2. satır: sıralama + istatistik
-        JPanel row2 = new JPanel(new GridLayout(1, 3, 10, 0));
+        // 2. satır: sıralama (fiyat + marka) + istatistik
+        JPanel row2 = new JPanel(new GridLayout(1, 5, 8, 0));
         row2.setBackground(AppColors.BG);
 
         UIFactory.RoundButton siralaArtanBtn = new UIFactory.RoundButton(
-                "  Fiyata Göre Sırala ↑", AppColors.SORT_BG, AppColors.SORT_FG, null, 10);
+                "  Fiyat ↑", AppColors.SORT_BG, AppColors.SORT_FG, null, 10);
         UIFactory.RoundButton siralaAzalanBtn = new UIFactory.RoundButton(
-                "  Fiyata Göre Sırala ↓", AppColors.SORT_BG, AppColors.SORT_FG, null, 10);
+                "  Fiyat ↓", AppColors.SORT_BG, AppColors.SORT_FG, null, 10);
+
+        // Marka sıralama (Insertion Sort) ← YENİ
+        Color markaBg = new Color(220, 235, 255);
+        Color markaFg = new Color(28, 76, 200);
+        UIFactory.RoundButton markaAzBtn = new UIFactory.RoundButton(
+                "  Marka A→Z", markaBg, markaFg, null, 10);
+        UIFactory.RoundButton markaZaBtn = new UIFactory.RoundButton(
+                "  Marka Z→A", markaBg, markaFg, null, 10);
+
         UIFactory.RoundButton istatistikBtn = new UIFactory.RoundButton(
                 "  İstatistikler", AppColors.STAT_BG, AppColors.STAT_FG, null, 10);
 
         row2.add(siralaArtanBtn);
         row2.add(siralaAzalanBtn);
+        row2.add(markaAzBtn);
+        row2.add(markaZaBtn);
         row2.add(istatistikBtn);
 
         JPanel rows = new JPanel(new BorderLayout(0, 0));
@@ -417,6 +477,8 @@ public class MainFrame extends JFrame {
         });
         siralaArtanBtn.addActionListener(e -> sirala(true));
         siralaAzalanBtn.addActionListener(e -> sirala(false));
+        markaAzBtn.addActionListener(e -> markaGoreSirala(true));
+        markaZaBtn.addActionListener(e -> markaGoreSirala(false));
         istatistikBtn.addActionListener(e -> new IstatistikDialog(this,
                 aracService.getAracListesi(),
                 kiralamaService.getKiralamaListesi()).setVisible(true));
@@ -649,10 +711,30 @@ public class MainFrame extends JFrame {
         updateEmptyLabel();
     }
 
+    /** Insertion Sort ile markaya göre sırala ← YENİ */
+    private void markaGoreSirala(boolean azdan) {
+        if (aktifGorunum.equals("kirada")) return;
+        ArrayList<Arac> kaynak = aktifGorunum.equals("musait")
+                ? aracService.musaitAraclariGetir() : aracService.getAracListesi();
+        ArrayList<Arac> sirali = siralamaService.markaGoreInsertionSort(kaynak, azdan);
+        setStandardColumns();
+        filterBar.setVisible(true);
+        tableModel.setRowCount(0);
+        for (Arac a : sirali)
+            tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
+        tableTitleLabel.setText("Markaya Göre Sıralı (" + (azdan ? "A→Z" : "Z→A") + ")");
+        updateEmptyLabel();
+    }
+
     private void filtreUygula() {
         String aranan = aramaField.getText().trim().toLowerCase();
         double minF   = parseDouble(minFiyatField.getText(), 0);
         double maxF   = parseDouble(maxFiyatField.getText(), Double.MAX_VALUE);
+
+        // Durum dropdown
+        String seciliDurum = durumFiltre != null
+                ? (String) durumFiltre.getSelectedItem() : "Tüm Durumlar";
+
         ArrayList<Arac> kaynak = aktifGorunum.equals("musait")
                 ? aracService.musaitAraclariGetir() : aracService.getAracListesi();
         setStandardColumns();
@@ -662,7 +744,10 @@ public class MainFrame extends JFrame {
                     || a.getMarka().toLowerCase().contains(aranan)
                     || a.getModel().toLowerCase().contains(aranan);
             boolean fiy = a.getGunlukFiyat() >= minF && a.getGunlukFiyat() <= maxF;
-            if (ad && fiy)
+            boolean dur = "Tüm Durumlar".equals(seciliDurum)
+                    || ("Müsait".equals(seciliDurum)  &&  a.isMusaitMi())
+                    || ("Kirada".equals(seciliDurum)  && !a.isMusaitMi());
+            if (ad && fiy && dur)
                 tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
         }
         tableTitleLabel.setText("Arama Sonuçları ("
@@ -672,6 +757,7 @@ public class MainFrame extends JFrame {
 
     private void filtreSifirla() {
         aramaField.setText(""); minFiyatField.setText(""); maxFiyatField.setText("");
+        if (durumFiltre != null) durumFiltre.setSelectedIndex(0);
         tableTitleLabel.setText("Tüm Araçlar");
         tabloyuYenile();
     }

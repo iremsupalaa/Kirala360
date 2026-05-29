@@ -1,82 +1,72 @@
 package services;
 
 import models.Arac;
+
 import java.util.ArrayList;
-import java.util.Comparator;
 
 /**
- * Araç listesi için sıralama algoritmaları.
- * Ek puan kriteri: veri sıralama algoritması (Bubble Sort implementasyonu).
+ * Sıralama algoritmaları servisi.
+ *
+ * Algoritmalar:
+ *   1. Bubble Sort    → fiyata göre artan/azalan
+ *   2. Insertion Sort → markaya göre A-Z / Z-A  ← YENİ (ek puan)
  */
 public class SiralamaService {
 
-    /**
-     * Bubble Sort — fiyata göre artan sıralama.
-     * Orijinal listeyi değiştirmez; yeni sıralı liste döner.
-     */
+    // ══════════════════════════════════════════════════════════════════════════
+    // 1. BUBBLE SORT — fiyata göre
+    // ══════════════════════════════════════════════════════════════════════════
+
     public ArrayList<Arac> fiyataGoreBubbleSort(ArrayList<Arac> liste, boolean artan) {
         ArrayList<Arac> kopya = new ArrayList<>(liste);
         int n = kopya.size();
-
         for (int i = 0; i < n - 1; i++) {
             for (int j = 0; j < n - i - 1; j++) {
-                double fiyat1 = kopya.get(j).getGunlukFiyat();
-                double fiyat2 = kopya.get(j + 1).getGunlukFiyat();
-
-                boolean takas = artan ? fiyat1 > fiyat2 : fiyat1 < fiyat2;
-                if (takas) {
-                    Arac temp = kopya.get(j);
+                boolean degistir = artan
+                        ? kopya.get(j).getGunlukFiyat() > kopya.get(j + 1).getGunlukFiyat()
+                        : kopya.get(j).getGunlukFiyat() < kopya.get(j + 1).getGunlukFiyat();
+                if (degistir) {
+                    Arac tmp = kopya.get(j);
                     kopya.set(j, kopya.get(j + 1));
-                    kopya.set(j + 1, temp);
+                    kopya.set(j + 1, tmp);
                 }
             }
         }
         return kopya;
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // 2. INSERTION SORT — markaya göre alfabetik  ← YENİ
+    // ══════════════════════════════════════════════════════════════════════════
+
     /**
-     * Bubble Sort — ID'ye göre artan sıralama.
+     * Insertion Sort algoritması ile araçları markaya göre sıralar.
+     * @param liste  kaynak liste (değiştirilmez, kopya döner)
+     * @param azdan  true → A-Z,  false → Z-A
      */
-    public ArrayList<Arac> idyeGoreBubbleSort(ArrayList<Arac> liste, boolean artan) {
+    public ArrayList<Arac> markaGoreInsertionSort(ArrayList<Arac> liste, boolean azdan) {
         ArrayList<Arac> kopya = new ArrayList<>(liste);
         int n = kopya.size();
 
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                int id1 = kopya.get(j).getId();
-                int id2 = kopya.get(j + 1).getId();
+        for (int i = 1; i < n; i++) {
+            Arac anahtar = kopya.get(i);
+            int j = i - 1;
 
-                boolean takas = artan ? id1 > id2 : id1 < id2;
-                if (takas) {
-                    Arac temp = kopya.get(j);
-                    kopya.set(j, kopya.get(j + 1));
-                    kopya.set(j + 1, temp);
-                }
+            while (j >= 0 && karsilastir(kopya.get(j), anahtar, azdan) > 0) {
+                kopya.set(j + 1, kopya.get(j));
+                j--;
             }
+            kopya.set(j + 1, anahtar);
         }
         return kopya;
     }
 
     /**
-     * Bubble Sort — marka adına göre alfabetik sıralama.
+     * Önce markaya göre, eşitse modele göre karşılaştırır.
      */
-    public ArrayList<Arac> markaGoreBubbleSort(ArrayList<Arac> liste, boolean artan) {
-        ArrayList<Arac> kopya = new ArrayList<>(liste);
-        int n = kopya.size();
-
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                int cmp = kopya.get(j).getMarka()
-                        .compareToIgnoreCase(kopya.get(j + 1).getMarka());
-
-                boolean takas = artan ? cmp > 0 : cmp < 0;
-                if (takas) {
-                    Arac temp = kopya.get(j);
-                    kopya.set(j, kopya.get(j + 1));
-                    kopya.set(j + 1, temp);
-                }
-            }
-        }
-        return kopya;
+    private int karsilastir(Arac a, Arac b, boolean azdan) {
+        int sonuc = a.getMarka().compareToIgnoreCase(b.getMarka());
+        if (sonuc == 0) sonuc = a.getModel().compareToIgnoreCase(b.getModel());
+        return azdan ? sonuc : -sonuc;
     }
 }
