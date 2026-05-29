@@ -1,8 +1,10 @@
-import gui.screens.MainFrame;
+import gui.screens.LoginFrame;
+
+import javax.swing.*;
+
 public class Main {
-
     public static void main(String[] args) {
-
-        new MainFrame();
+        // Swing EDT üzerinde başlat
+        SwingUtilities.invokeLater(() -> new LoginFrame());
     }
 }
