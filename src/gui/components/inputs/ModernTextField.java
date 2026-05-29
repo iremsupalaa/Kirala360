@@ -17,22 +17,17 @@ public class ModernTextField extends JTextField {
     public ModernTextField(String placeholder) {
 
         this.placeholder = placeholder;
-
         setFont(AppFonts.BODY);
-
         setOpaque(false);
-
         setBorder(new EmptyBorder(
                 10,
                 14,
                 10,
                 14
         ));
-
         setForeground(AppColors.TITLE_FG);
 
         addFocusListener(new java.awt.event.FocusAdapter() {
-
             @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 focused = true;

@@ -340,7 +340,7 @@ public class MainFrame extends JFrame {
         titleBar.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, AppColors.GRID));
         tableTitleLabel = new JLabel("Tüm Araçlar");
-        tableTitleLabel.setFont(AppFonts.TITLE);
+        tableTitleLabel.setFont(AppFonts.TABLE_CELL);
         tableTitleLabel.setForeground(AppColors.TITLE_FG);
         titleBar.add(tableTitleLabel);
         north.add(titleBar);
