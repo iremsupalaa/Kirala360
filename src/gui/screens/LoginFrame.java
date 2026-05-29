@@ -14,6 +14,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import gui.theme.AppFonts;
 
 /**
  * Kullanıcı giriş ekranı.
@@ -78,12 +79,12 @@ public class LoginFrame extends JFrame {
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel baslik = new JLabel("Kirala360", SwingConstants.CENTER);
-        baslik.setFont(new Font("SansSerif", Font.BOLD, 17));
+        baslik.setFont(AppFonts.TITLE);
         baslik.setForeground(TITLE_FG);
         baslik.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel altBaslik = new JLabel("L\u00fctfen Giri\u015f Yap\u0131n", SwingConstants.CENTER);
-        altBaslik.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        altBaslik.setFont(AppFonts.BODY);
         altBaslik.setForeground(new Color(120, 130, 155));
         altBaslik.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -99,7 +100,7 @@ public class LoginFrame extends JFrame {
 
         // Hata
         hataMesaji = new JLabel(" ", SwingConstants.CENTER);
-        hataMesaji.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        hataMesaji.setFont(AppFonts.BODY_MEDIUM);
         hataMesaji.setForeground(ERR_FG);
         hataMesaji.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -204,7 +205,7 @@ public class LoginFrame extends JFrame {
     // ── Yardımcı ─────────────────────────────────────────────────────────────
     private JLabel kullaniciLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        l.setFont(AppFonts.BODY_MEDIUM);
         l.setForeground(LABEL_FG);
         l.setAlignmentX(Component.CENTER_ALIGNMENT);
         l.setHorizontalAlignment(SwingConstants.CENTER);
@@ -212,7 +213,7 @@ public class LoginFrame extends JFrame {
     }
 
     private void styleField(JTextField f, boolean hata) {
-        f.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        f.setFont(AppFonts.BODY_MEDIUM);
         f.setMaximumSize(new Dimension(280, 38));
         f.setPreferredSize(new Dimension(280, 38));
         f.setMaximumSize(new Dimension(280, 38));
