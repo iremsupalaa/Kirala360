@@ -25,11 +25,12 @@ public class DosyaService {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(ARAC_DOSYA))) {
             for (Arac arac : aracListesi) {
                 writer.write(
-                        arac.getId()          + "," +
-                                arac.getMarka()       + "," +
-                                arac.getModel()       + "," +
-                                arac.getGunlukFiyat() + "," +
-                                arac.isMusaitMi()
+                        arac.getId()                    + "," +
+                                arac.getMarka()                 + "," +
+                                arac.getModel()                 + "," +
+                                arac.getGunlukFiyat()           + "," +
+                                arac.isMusaitMi()               + "," +
+                                arac.getSanzuman().name()           // MANUEL veya OTOMATIK
                 );
                 writer.newLine();
             }
@@ -49,12 +50,15 @@ public class DosyaService {
                 if (satir.trim().isEmpty()) continue;
                 String[] b = satir.split(",");
                 if (b.length < 5) continue;
-                int     id     = Integer.parseInt(b[0].trim());
-                String  marka  = b[1].trim();
-                String  model  = b[2].trim();
-                double  fiyat  = Double.parseDouble(b[3].trim());
-                boolean musait = Boolean.parseBoolean(b[4].trim());
-                liste.add(new Arac(id, marka, model, fiyat, musait));
+                int     id      = Integer.parseInt(b[0].trim());
+                String  marka   = b[1].trim();
+                String  model   = b[2].trim();
+                double  fiyat   = Double.parseDouble(b[3].trim());
+                boolean musait  = Boolean.parseBoolean(b[4].trim());
+                models.Arac.Sanzuman sanz = b.length > 5
+                        ? models.Arac.Sanzuman.fromString(b[5].trim())
+                        : models.Arac.Sanzuman.MANUEL;
+                liste.add(new Arac(id, marka, model, fiyat, musait, sanz));
             }
         } catch (IOException e) {
             System.out.println("Dosya okuma hatas\u0131: " + e.getMessage());

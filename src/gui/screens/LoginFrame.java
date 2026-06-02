@@ -2,8 +2,6 @@ package gui.screens;
 
 import gui.UIFactory;
 import services.DosyaService;
-import services.KiralamaService;
-import services.AracService;
 import models.Arac;
 import models.Kiralama;
 
@@ -12,28 +10,20 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import gui.theme.AppFonts;
 
-/**
- * Kullanıcı giriş ekranı.
- * Kullanıcılar data/kullanicilar.txt dosyasından yüklenir.
- * Dosya yoksa varsayılan: admin / 1234
- * 3 yanlış girişte giriş butonu 30 saniye kilitlenir.
- */
 public class LoginFrame extends JFrame {
 
     private static final int MAX_DENEME    = 3;
     private static final int KILIT_SURE_SN = 30;
 
-    private static final Color BG        = new Color(243, 244, 248);
+    private static final Color BG        = new Color(235, 238, 248);
     private static final Color CARD_BG   = Color.WHITE;
-    private static final Color CARD_BDR  = new Color(212, 218, 232);
+    private static final Color CARD_BDR  = new Color(210, 216, 232);
     private static final Color ACCENT    = new Color(41, 98, 255);
     private static final Color TITLE_FG  = new Color(18, 25, 50);
-    private static final Color LABEL_FG  = new Color(52, 62, 88);
-    private static final Color INPUT_BDR = new Color(192, 200, 220);
+    private static final Color LABEL_FG  = new Color(70, 80, 110);
+    private static final Color INPUT_BDR = new Color(200, 208, 228);
     private static final Color ERR_FG    = new Color(200, 30, 30);
 
     private JTextField     kullaniciField;
@@ -41,189 +31,225 @@ public class LoginFrame extends JFrame {
     private JLabel         hataMesaji;
     private UIFactory.RoundButton girisBtn;
 
-    private int yanlisSayisi = 0;
-    private boolean kilitli  = false;
+    private int     yanlisSayisi = 0;
+    private boolean kilitli      = false;
 
-    // Kullanıcı adı → şifre
     private final Map<String, String> kullanicilar;
 
-    // ── Veri servisleri (giriş başarılı olunca MainFrame'e geç) ──────────────
-    private final DosyaService dosyaService = new DosyaService();
-
     public LoginFrame() {
-        kullanicilar = dosyaService.kullanicilariYukle();
+        kullanicilar = new DosyaService().kullanicilariYukle();
 
-        setTitle("Araç Kiralama Sistemi \u2014 Giri\u015f");
-        Image appIcon = Toolkit.getDefaultToolkit()
-                .getImage(getClass().getResource("/assets/kirala360.png"));
-        setIconImage(appIcon);
-        setSize(500, 650);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setTitle("Ara\u00e7 Kiralama Sistemi \u2014 Giri\u015f");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
 
-        JPanel root = new JPanel(null);
-        root.setBackground(BG);
+        // ── Kök: gradient arka plan ───────────────────────────────────────────
+        JPanel root = new JPanel(new GridBagLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                GradientPaint gp = new GradientPaint(
+                        0, 0, new Color(220, 228, 255),
+                        getWidth(), getHeight(), new Color(235, 240, 255));
+                g2.setPaint(gp);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        root.setOpaque(false);
+        setBackground(new Color(220, 228, 255));
         add(root);
 
+        // ── Kart ─────────────────────────────────────────────────────────────
         LoginCard card = new LoginCard();
-        card.setBounds(40, 30, 400, 540);
-        root.add(card);
+
+        // Logo — assets klasöründen yükle
+        JPanel ikonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        ikonPanel.setOpaque(false);
+        ikonPanel.setAlignmentX(CENTER_ALIGNMENT);
+        try {
+            java.net.URL url = getClass().getClassLoader()
+                    .getResource("assets/kirala360.png");
+            if (url == null) {
+                // Classpath'ta bulunamazsa dosya yolundan dene
+                java.io.File f = new java.io.File("src/assets/kirala360.png");
+                if (!f.exists()) f = new java.io.File("assets/kirala360.png");
+                if (f.exists()) url = f.toURI().toURL();
+            }
+            if (url != null) {
+                ImageIcon raw = new ImageIcon(url);
+                Image scaled = raw.getImage().getScaledInstance(72, 72,
+                        java.awt.Image.SCALE_SMOOTH);
+                ikonPanel.add(new JLabel(new ImageIcon(scaled)));
+            }
+        } catch (Exception ignored) {}
 
         // Başlık
-        ImageIcon logoIcon = new ImageIcon(
-                getClass().getResource("/assets/kirala360.png"));
-        Image scaledLogo = logoIcon.getImage()
-                .getScaledInstance(90, 90, Image.SCALE_SMOOTH);
-        JLabel logo = new JLabel(new ImageIcon(scaledLogo));
-        logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         JLabel baslik = new JLabel("Kirala360", SwingConstants.CENTER);
-        baslik.setFont(AppFonts.TITLE);
+        baslik.setFont(new Font("SansSerif", Font.BOLD, 22));
         baslik.setForeground(TITLE_FG);
-        baslik.setAlignmentX(Component.CENTER_ALIGNMENT);
+        baslik.setAlignmentX(CENTER_ALIGNMENT);
 
-        JLabel altBaslik = new JLabel("L\u00fctfen Giri\u015f Yap\u0131n", SwingConstants.CENTER);
-        altBaslik.setFont(AppFonts.BODY);
-        altBaslik.setForeground(new Color(120, 130, 155));
-        altBaslik.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel altBaslik = new JLabel("Hesab\u0131n\u0131za giri\u015f yap\u0131n", SwingConstants.CENTER);
+        altBaslik.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        altBaslik.setForeground(new Color(120, 132, 160));
+        altBaslik.setAlignmentX(CENTER_ALIGNMENT);
+
+        // Ayırıcı çizgi
+        JSeparator sep = new JSeparator();
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setForeground(new Color(230, 234, 245));
 
         // Kullanıcı adı
-        JLabel kullaniciLbl = kullaniciLabel("Kullan\u0131c\u0131 Ad\u0131");
-        kullaniciField = new JTextField();
-        styleField(kullaniciField, false);
-
+        kullaniciField = styledField("Kullan\u0131c\u0131 ad\u0131n\u0131z\u0131 girin");
         // Şifre
-        JLabel sifreLbl = kullaniciLabel("\u015fifre");
         sifreField = new JPasswordField();
-        styleField(sifreField, false);
+        styleSifre(sifreField);
 
         // Hata
         hataMesaji = new JLabel(" ", SwingConstants.CENTER);
-        hataMesaji.setFont(AppFonts.BODY_MEDIUM);
+        hataMesaji.setFont(new Font("SansSerif", Font.PLAIN, 12));
         hataMesaji.setForeground(ERR_FG);
-        hataMesaji.setAlignmentX(Component.CENTER_ALIGNMENT);
+        hataMesaji.setAlignmentX(CENTER_ALIGNMENT);
 
         // Giriş butonu
-        girisBtn = new UIFactory.RoundButton("  Giri\u015f Yap", ACCENT, Color.WHITE, null, 20);
-        girisBtn.setPreferredSize(new Dimension(220, 45));
-        girisBtn.setMaximumSize(new Dimension(220, 45));
-        girisBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        girisBtn = new UIFactory.RoundButton(
+                "Giri\u015f Yap", ACCENT, Color.WHITE, null, 22);
+        girisBtn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        girisBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
+        girisBtn.setAlignmentX(CENTER_ALIGNMENT);
 
-        card.add(logo);
-        card.add(Box.createVerticalStrut(4));
+        // Alt not
+        JLabel notLbl = new JLabel("admin / 1234 ile giri\u015f yap\u0131labilir", SwingConstants.CENTER);
+        notLbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        notLbl.setForeground(new Color(160, 170, 195));
+        notLbl.setAlignmentX(CENTER_ALIGNMENT);
+
+        // Karta ekle
+        card.add(ikonPanel);
+        card.add(Box.createVerticalStrut(12));
         card.add(baslik);
-        card.add(Box.createVerticalStrut(2));
-        card.add(altBaslik);
-        card.add(Box.createVerticalStrut(18));
-        card.add(kullaniciLbl);
-        card.add(Box.createVerticalStrut(3));
-        card.add(kullaniciField);
-        card.add(Box.createVerticalStrut(10));
-        card.add(sifreLbl);
-        card.add(Box.createVerticalStrut(3));
-        card.add(sifreField);
-        card.add(Box.createVerticalStrut(8));
-        card.add(hataMesaji);
         card.add(Box.createVerticalStrut(4));
+        card.add(altBaslik);
+        card.add(Box.createVerticalStrut(20));
+        card.add(sep);
+        card.add(Box.createVerticalStrut(20));
+        card.add(formLabel("Kullan\u0131c\u0131 Ad\u0131"));
+        card.add(Box.createVerticalStrut(6));
+        card.add(kullaniciField);
+        card.add(Box.createVerticalStrut(14));
+        card.add(formLabel("\u015eifre"));
+        card.add(Box.createVerticalStrut(6));
+        card.add(sifreField);
+        card.add(Box.createVerticalStrut(12));
+        card.add(hataMesaji);
+        card.add(Box.createVerticalStrut(8));
         card.add(girisBtn);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(20, 20, 20, 20);
+        root.add(card, gbc);
 
         girisBtn.addActionListener(e -> girisYap());
         sifreField.addActionListener(e -> girisYap());
         kullaniciField.addActionListener(e -> sifreField.requestFocus());
 
+        pack();
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // ── Giriş kontrolü ───────────────────────────────────────────────────────
+    // ── Giriş ────────────────────────────────────────────────────────────────
     private void girisYap() {
         if (kilitli) return;
-
         String kullanici = kullaniciField.getText().trim();
         String sifre     = new String(sifreField.getPassword()).trim();
+        String kayitli   = kullanicilar.get(kullanici);
 
-        String kayitliSifre = kullanicilar.get(kullanici);
-
-        if (kayitliSifre != null && kayitliSifre.equals(sifre)) {
-            // ── Giriş başarılı: verileri yükle, MainFrame aç ─────────────────
+        if (kayitli != null && kayitli.equals(sifre)) {
             girisBasarili(kullanici);
         } else {
             yanlisSayisi++;
             sifreField.setText("");
             styleBorder(sifreField, true);
-            styleBorder(kullaniciField, kayitliSifre == null);
-
+            styleBorder(kullaniciField, kayitli == null);
             int kalan = MAX_DENEME - yanlisSayisi;
-            if (yanlisSayisi >= MAX_DENEME) {
-                hesabiKitle();
-            } else {
-                hataMesaji.setText("Hatal\u0131 giri\u015f! " + kalan + " hakk\u0131n\u0131z kald\u0131.");
-            }
+            if (yanlisSayisi >= MAX_DENEME) hesabiKitle();
+            else hataMesaji.setText("Hatal\u0131 giri\u015f! " + kalan + " hakk\u0131n\u0131z kald\u0131.");
         }
     }
 
     private void girisBasarili(String kullanici) {
-        // Verileri dosyadan yükle
-        DosyaService ds        = new DosyaService();
-        ArrayList<Arac> araclar = ds.araclariYukle();
-        ArrayList<Kiralama> kiralamalar = ds.kiralamalariYukle(araclar);
-
-        // Kiralanan araçları müsait=false olarak işaretle
-        for (Kiralama k : kiralamalar) {
-            k.getArac().setMusaitMi(false);
+        try {
+            new java.io.File("data").mkdirs();
+            DosyaService ds = new DosyaService();
+            ArrayList<Arac> araclar = ds.araclariYukle();
+            ArrayList<Kiralama> kiralamalar = ds.kiralamalariYukle(araclar);
+            for (Kiralama k : kiralamalar) k.getArac().setMusaitMi(false);
+            new MainFrame(araclar, kiralamalar, kullanici);
+            dispose();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            hataMesaji.setText("Hata: " + ex.getMessage());
         }
-
-        dispose();
-        new MainFrame(araclar, kiralamalar, kullanici);
     }
 
     private void hesabiKitle() {
         kilitli = true;
         girisBtn.setEnabled(false);
-        hataMesaji.setForeground(new Color(160, 60, 0));
-
-        // Geri sayım
         final int[] kalan = {KILIT_SURE_SN};
-        Timer timer = new Timer(1000, null);
-        timer.addActionListener(e -> {
+        Timer t = new Timer(1000, null);
+        t.addActionListener(e -> {
             kalan[0]--;
             if (kalan[0] <= 0) {
-                timer.stop();
-                kilitli      = false;
-                yanlisSayisi = 0;
+                t.stop(); kilitli = false; yanlisSayisi = 0;
                 girisBtn.setEnabled(true);
                 hataMesaji.setForeground(ERR_FG);
                 hataMesaji.setText("Tekrar deneyebilirsiniz.");
             } else {
-                hataMesaji.setText("Hesap kilitlendi. " + kalan[0] + " saniye bekleyin.");
+                hataMesaji.setText(kalan[0] + " saniye kilitli...");
             }
         });
-        timer.start();
-        hataMesaji.setText("3 yanl\u0131\u015f giri\u015f! " + KILIT_SURE_SN + " saniye kilitlendi.");
+        t.start();
+        hataMesaji.setForeground(new Color(160, 60, 0));
+        hataMesaji.setText("3 yanl\u0131\u015f! " + KILIT_SURE_SN + " saniye kilitlendi.");
     }
 
-    // ── Yardımcı ─────────────────────────────────────────────────────────────
-    private JLabel kullaniciLabel(String text) {
+    // ── Yardımcılar ───────────────────────────────────────────────────────────
+    private JLabel formLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(AppFonts.BODY_MEDIUM);
+        l.setFont(new Font("SansSerif", Font.BOLD, 12));
         l.setForeground(LABEL_FG);
-        l.setAlignmentX(Component.CENTER_ALIGNMENT);
-        l.setHorizontalAlignment(SwingConstants.CENTER);
+        l.setAlignmentX(CENTER_ALIGNMENT);
         return l;
     }
 
-    private void styleField(JTextField f, boolean hata) {
-        f.setFont(AppFonts.BODY_MEDIUM);
-        f.setMaximumSize(new Dimension(280, 38));
-        f.setPreferredSize(new Dimension(280, 38));
-        f.setMaximumSize(new Dimension(280, 38));
-        f.setAlignmentX(Component.CENTER_ALIGNMENT);
-        styleBorder(f, hata);
+    private JTextField styledField(String placeholder) {
+        JTextField f = new JTextField();
+        f.putClientProperty("JTextField.placeholderText", placeholder);
+        f.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        f.setAlignmentX(CENTER_ALIGNMENT);
+        styleBorder(f, false);
+        addFocusEffect(f);
+        return f;
+    }
+
+    private void styleSifre(JPasswordField f) {
+        f.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        f.setAlignmentX(CENTER_ALIGNMENT);
+        styleBorder(f, false);
+        addFocusEffect(f);
+    }
+
+    private void addFocusEffect(JTextField f) {
         f.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override public void focusGained(java.awt.event.FocusEvent e) {
                 f.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(ACCENT, 2),
-                        new EmptyBorder(2, 7, 2, 7)));
+                        new EmptyBorder(4, 10, 4, 10)));
             }
             @Override public void focusLost(java.awt.event.FocusEvent e) {
                 styleBorder(f, false);
@@ -232,30 +258,41 @@ public class LoginFrame extends JFrame {
     }
 
     private void styleBorder(JTextField f, boolean hata) {
-        Color bdr = hata ? new Color(200, 60, 60) : INPUT_BDR;
+        Color bdr = hata ? new Color(220, 50, 50) : INPUT_BDR;
         f.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(bdr, hata ? 2 : 1),
-                new EmptyBorder(3, 8, 3, 8)));
+                new EmptyBorder(5, 10, 5, 10)));
     }
 
-    // ── Yuvarlak kart ─────────────────────────────────────────────────────────
+    // ── Kart bileşeni ────────────────────────────────────────────────────────
     static class LoginCard extends JPanel {
         LoginCard() {
             setOpaque(false);
             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            setBorder(new EmptyBorder(22, 24, 22, 24));
+            setBorder(new EmptyBorder(32, 32, 32, 32));
+            setPreferredSize(new Dimension(360, 480));
         }
-        @Override protected void paintComponent(Graphics g) {
+
+        @Override
+        protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(0, 0, 0, 15));
-            g2.fill(new RoundRectangle2D.Float(2, 3, getWidth()-3, getHeight()-2, 16, 16));
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            // Gölge katmanları
+            for (int i = 3; i >= 1; i--) {
+                g2.setColor(new Color(60, 80, 160, 8 * i));
+                g2.fill(new RoundRectangle2D.Float(
+                        i, i + 2, getWidth() - i * 2, getHeight() - i * 2, 20, 20));
+            }
+            // Kart
             g2.setColor(CARD_BG);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth()-2, getHeight()-2, 14, 14));
-            g2.setColor(CARD_BDR);
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 4, getHeight() - 4, 20, 20));
+            // Kenarlık
+            g2.setColor(new Color(220, 226, 242));
             g2.setStroke(new BasicStroke(1f));
-            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth()-3, getHeight()-3, 14, 14));
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 5, getHeight() - 5, 20, 20));
             g2.dispose();
+            super.paintComponent(g);
         }
     }
 }

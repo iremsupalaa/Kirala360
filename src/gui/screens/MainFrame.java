@@ -4,7 +4,6 @@ import gui.IstatistikDialog;
 import gui.UIFactory;
 import gui.components.ToastNotification;
 import gui.theme.AppColors;
-import gui.theme.AppFonts;
 import models.Arac;
 import models.Kiralama;
 import models.Musteri;
@@ -12,6 +11,7 @@ import services.AracService;
 import services.DosyaService;
 import services.KiralamaService;
 import services.SiralamaService;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -26,7 +26,6 @@ import gui.components.card.StatsCard;
 import gui.components.table.ActionCellRenderer;
 import gui.components.table.ActionCellEditor;
 import gui.components.table.TableStyler;
-import gui.theme.AppFonts;
 import gui.components.inputs.FormGroup;
 
 public class MainFrame extends JFrame {
@@ -64,6 +63,9 @@ public class MainFrame extends JFrame {
     // ── Durum filtresi dropdown ───────────────────────────────────────────────
     private JComboBox<String> durumFiltre;
 
+    // ── Şanzuman formu dropdown ───────────────────────────────────────────────
+    private JComboBox<models.Arac.Sanzuman> sanzumanCombo;
+
     // ═════════════════════════════════════════════════════════════════════════
     // Eski constructor (geriye dönük uyumluluk)
     public MainFrame() {
@@ -84,10 +86,7 @@ public class MainFrame extends JFrame {
         }
         siralamaService = new SiralamaService();
 
-        setTitle("Kirala360");
-        Image appIcon = Toolkit.getDefaultToolkit()
-                .getImage(getClass().getResource("/assets/kirala360.png"));
-        setIconImage(appIcon);
+        setTitle("Araç Kiralama Sistemi");
         setMinimumSize(new Dimension(1100, 820));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -124,27 +123,12 @@ public class MainFrame extends JFrame {
 
         // Başlık (sol)
         String titleText = aktifKullanici != null && !aktifKullanici.isEmpty()
-                ? "Kirala360  |  " + aktifKullanici
-                : "Kirala360";
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        titlePanel.setOpaque(false);
-
-        ImageIcon logoIcon = new ImageIcon(
-                getClass().getResource("/assets/kirala360.png"));
-
-        Image scaled = logoIcon.getImage()
-                .getScaledInstance(42, 42, Image.SCALE_SMOOTH);
-
-        JLabel logoLabel = new JLabel(new ImageIcon(scaled));
-
+                ? "Araç Kiralama Sistemi  |  " + aktifKullanici
+                : "Araç Kiralama Sistemi";
         JLabel title = new JLabel(titleText);
-        title.setFont(AppFonts.TITLE);
+        title.setFont(new Font("SansSerif", Font.BOLD, 28));
         title.setForeground(AppColors.TITLE_FG);
-
-        titlePanel.add(logoLabel);
-        titlePanel.add(title);
-
-        north.add(titlePanel, BorderLayout.WEST);
+        north.add(title, BorderLayout.WEST);
 
         // Stats kartları (sağ)
         JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -157,6 +141,16 @@ public class MainFrame extends JFrame {
         fiyatCard  = new StatsCard("Toplam Değer", "0 ₺",
                 new Color(255, 245, 225), new Color(210, 120, 20));
 
+
+        // Kullanıcı yönetim butonu
+        UIFactory.RoundButton kullaniciBtn = new UIFactory.RoundButton(
+                "  Kullanıcılar",
+                new Color(240, 242, 255), new Color(41, 98, 255), null, 10);
+        kullaniciBtn.setPreferredSize(new Dimension(120, 38));
+        kullaniciBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 13));
+        kullaniciBtn.addActionListener(e ->
+                new KullaniciYonetimiDialog(this).setVisible(true));
+        statsPanel.add(kullaniciBtn);
         statsPanel.add(toplamCard);
         statsPanel.add(musaitCard);
         statsPanel.add(fiyatCard);
@@ -229,6 +223,22 @@ public class MainFrame extends JFrame {
             ekleCard.add(UIFactory.vgap(10));
         }
 
+
+
+        // Şanzuman dropdown
+        JLabel sanzLbl = new JLabel("Şanzuman");
+        sanzLbl.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        sanzLbl.setForeground(gui.theme.AppColors.LABEL_FG);
+        sanzLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sanzumanCombo = new JComboBox<>(models.Arac.Sanzuman.values());
+        sanzumanCombo.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        sanzumanCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        sanzumanCombo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ekleCard.add(sanzLbl);
+        ekleCard.add(UIFactory.vgap(3));
+        ekleCard.add(sanzumanCombo);
+        ekleCard.add(UIFactory.vgap(4));
+
         GradientButton ekleBtn = new GradientButton("Araç Ekle",
                 new Color(45, 120, 255), new Color(20, 90, 220));
         ekleBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
@@ -280,7 +290,7 @@ public class MainFrame extends JFrame {
         UIFactory.RoundCard tableCard = new UIFactory.RoundCard(14);
         tableCard.setLayout(new BorderLayout());
 
-        String[] cols = {"ID", "Marka", "Model", "Fiyat (Günlük)", "Müsaitlik", "İşlemler"};
+        String[] cols = {"ID", "Marka", "Model", "Fiyat (Günlük)", "Şanzuman", "Müsaitlik", "İşlemler"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) {
                 return c == getColumnCount() - 1;
@@ -289,8 +299,7 @@ public class MainFrame extends JFrame {
 
         aracTable = new ModernTable();
         aracTable.setModel(tableModel);
-        aracTable.getColumnModel().getColumn(5).setCellRenderer(new ActionCellRenderer());
-        aracTable.getColumnModel().getColumn(5).setCellEditor(new ActionCellEditor());
+        // Renderer/editor setStandardColumns() içinde bağlanıyor
 
         tableCard.add(buildTableNorthPanel(), BorderLayout.NORTH);
 
@@ -302,11 +311,11 @@ public class MainFrame extends JFrame {
         scroll.getViewport().setBackground(Color.WHITE);
         aracTable.setRowHeight(48);
         aracTable.setFillsViewportHeight(true);
-        TableStyler.setColumnWidths(aracTable, 65, 145, 145, 145, 120, 120);
+        TableStyler.setColumnWidths(aracTable, 55, 120, 120, 120, 95, 95, 110);
         TableStyler.styleTable(aracTable, scroll);
 
         emptyLabel = new JLabel("Araç bulunamadı", SwingConstants.CENTER);
-        emptyLabel.setFont(AppFonts.BODY);
+        emptyLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         emptyLabel.setForeground(new Color(160, 168, 190));
         emptyLabel.setVisible(false);
 
@@ -340,7 +349,7 @@ public class MainFrame extends JFrame {
         titleBar.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, AppColors.GRID));
         tableTitleLabel = new JLabel("Tüm Araçlar");
-        tableTitleLabel.setFont(AppFonts.TITLE);
+        tableTitleLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         tableTitleLabel.setForeground(AppColors.TITLE_FG);
         titleBar.add(tableTitleLabel);
         north.add(titleBar);
@@ -351,7 +360,7 @@ public class MainFrame extends JFrame {
         filterBar.setBorder(BorderFactory.createMatteBorder(
                 0, 0, 1, 0, AppColors.GRID));
 
-        aramaField    = new ModernTextField("Marka/Model Ara");
+        aramaField    = new ModernTextField("Marka veya model ara");
         minFiyatField = new ModernTextField("Min");
         maxFiyatField = new ModernTextField("Max");
         aramaField.setPreferredSize(new Dimension(160, 36));
@@ -369,7 +378,7 @@ public class MainFrame extends JFrame {
 
         // Durum filtresi dropdown
         durumFiltre = new JComboBox<>(new String[]{"Tüm Durumlar", "Müsait", "Kirada"});
-        durumFiltre.setFont(AppFonts.BODY);
+        durumFiltre.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
         durumFiltre.setPreferredSize(new java.awt.Dimension(120, 36));
 
         filterBar.add(filterLabel("Marka / Model:"));
@@ -378,8 +387,16 @@ public class MainFrame extends JFrame {
         filterBar.add(minFiyatField);
         filterBar.add(filterLabel("Max ₺:"));
         filterBar.add(maxFiyatField);
+        JComboBox<String> sanzFiltre = new JComboBox<>(
+                new String[]{"Tüm Şanzuman", "Manuel", "Ötomatik"});
+        sanzFiltre.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
+        sanzFiltre.setPreferredSize(new java.awt.Dimension(110, 36));
+        sanzFiltre.setName("sanzFiltre");
+
         filterBar.add(filterLabel("Durum:"));
         filterBar.add(durumFiltre);
+        filterBar.add(filterLabel("Şanzuman:"));
+        filterBar.add(sanzFiltre);
         filterBar.add(filtreBtn);
         filterBar.add(temizleBtn);
         north.add(filterBar);
@@ -390,6 +407,7 @@ public class MainFrame extends JFrame {
         minFiyatField.addActionListener(e -> filtreUygula());
         maxFiyatField.addActionListener(e -> filtreUygula());
         durumFiltre.addActionListener(e -> filtreUygula());
+        sanzFiltre.addActionListener(e -> filtreUygula());
 
         return north;
     }
@@ -521,6 +539,8 @@ public class MainFrame extends JFrame {
         markaField.setText(marka.toString());
         modelField.setText(model.toString());
         fiyatField.setText(fiyatStr);
+        Arac hedefArac = aracService.aracGetir(Integer.parseInt(id.toString()));
+        if (hedefArac != null) sanzumanCombo.setSelectedItem(hedefArac.getSanzuman());
         idField.requestFocusInWindow();
         ToastNotification.show(this, "Formu düzenleyip Araç Ekle'ye tıklayın.", ToastNotification.Type.INFO);
     }
@@ -580,8 +600,10 @@ public class MainFrame extends JFrame {
             int    id    = Integer.parseInt(idField.getText().trim());
             double fiyat = Double.parseDouble(
                     fiyatField.getText().trim().replace(",", "."));
+            models.Arac.Sanzuman sanz =
+                    (models.Arac.Sanzuman) sanzumanCombo.getSelectedItem();
             aracService.aracEkle(new Arac(id, markaField.getText().trim(),
-                    modelField.getText().trim(), fiyat, true));
+                    modelField.getText().trim(), fiyat, true, sanz));
             tabloyuYenile();
             temizle();
             ToastNotification.show(this, "Araç başarıyla eklendi.", ToastNotification.Type.SUCCESS);
@@ -622,22 +644,18 @@ public class MainFrame extends JFrame {
     private void setStandardColumns() {
         tableModel.setColumnCount(0);
         for (String col : new String[]{
-                "ID", "Marka", "Model", "Fiyat (Gunluk)", "Musaitlik", "Islemler"})
+                "ID", "Marka", "Model",
+                "Fiyat (Günlük)", "Şanzuman", "Müsaitlik", "İşlemler"})
             tableModel.addColumn(col);
-        // geri ekle
-        tableModel.setColumnCount(0);
-        for (String col : new String[]{
-                "ID", "Marka", "Model", "Fiyat (G\u00fcnl\u00fck)", "M\u00fcsaitlik", "\u0130\u015flemler"})
-            tableModel.addColumn(col);
-        TableStyler.setColumnWidths(aracTable, 65, 145, 145, 145, 120, 120);
+        TableStyler.setColumnWidths(aracTable, 55, 120, 120, 120, 95, 95, 110);
 
         ActionCellEditor editor = new ActionCellEditor();
         editor.setOnView  (row -> onAracDetay(row));
         editor.setOnEdit  (row -> onAracDuzenle(row));
         editor.setOnDelete(row -> onAracSil(row));
 
-        aracTable.getColumnModel().getColumn(5).setCellRenderer(new ActionCellRenderer());
-        aracTable.getColumnModel().getColumn(5).setCellEditor(editor);
+        aracTable.getColumnModel().getColumn(6).setCellRenderer(new ActionCellRenderer());
+        aracTable.getColumnModel().getColumn(6).setCellEditor(editor);
     }
 
     private void setKiradaColumns() {
@@ -740,6 +758,15 @@ public class MainFrame extends JFrame {
                 ? aracService.musaitAraclariGetir() : aracService.getAracListesi();
         setStandardColumns();
         tableModel.setRowCount(0);
+        // Şanzuman filtre değerini al
+        String seciliSanz = "Tüm Şanzuman";
+        for (java.awt.Component c : filterBar.getComponents()) {
+            if (c instanceof JComboBox && "sanzFiltre".equals(((JComboBox<?>)c).getName())) {
+                seciliSanz = (String)((JComboBox<?>)c).getSelectedItem();
+            }
+        }
+        final String sanzSec = seciliSanz;
+
         for (Arac a : kaynak) {
             boolean ad  = aranan.isEmpty()
                     || a.getMarka().toLowerCase().contains(aranan)
@@ -748,7 +775,10 @@ public class MainFrame extends JFrame {
             boolean dur = "Tüm Durumlar".equals(seciliDurum)
                     || ("Müsait".equals(seciliDurum)  &&  a.isMusaitMi())
                     || ("Kirada".equals(seciliDurum)  && !a.isMusaitMi());
-            if (ad && fiy && dur)
+            boolean sanz = "Tüm Şanzuman".equals(sanzSec)
+                    || ("Manuel".equals(sanzSec) && a.getSanzuman() == models.Arac.Sanzuman.MANUEL)
+                    || ("Ötomatik".equals(sanzSec) && a.getSanzuman() == models.Arac.Sanzuman.OTOMATIK);
+            if (ad && fiy && dur && sanz)
                 tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
         }
         tableTitleLabel.setText("Arama Sonuçları ("
@@ -759,6 +789,10 @@ public class MainFrame extends JFrame {
     private void filtreSifirla() {
         aramaField.setText(""); minFiyatField.setText(""); maxFiyatField.setText("");
         if (durumFiltre != null) durumFiltre.setSelectedIndex(0);
+        for (java.awt.Component c : filterBar.getComponents()) {
+            if (c instanceof JComboBox && "sanzFiltre".equals(((JComboBox<?>)c).getName()))
+                ((JComboBox<?>)c).setSelectedIndex(0);
+        }
         tableTitleLabel.setText("Tüm Araçlar");
         tabloyuYenile();
     }
@@ -784,7 +818,7 @@ public class MainFrame extends JFrame {
 
     private Object[] tableRow(Arac a, String durum) {
         return new Object[]{a.getId(), a.getMarka(), a.getModel(),
-                fmt(a.getGunlukFiyat()), durum, ""};
+                fmt(a.getGunlukFiyat()), a.getSanzuman().getEtiket(), durum, ""};
     }
 
     private void temizle() {
@@ -809,7 +843,7 @@ public class MainFrame extends JFrame {
 
     private JLabel filterLabel(String text) {
         JLabel l = new JLabel(text);
-        l.setFont(AppFonts.TABLE_CELL);
+        l.setFont(new Font("SansSerif", Font.PLAIN, 13));
         l.setForeground(AppColors.LABEL_FG);
         return l;
     }
