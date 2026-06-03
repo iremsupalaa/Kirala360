@@ -182,6 +182,21 @@ public class MainFrame extends JFrame {
         leftSP.getVerticalScrollBar().setUI(new ModernScrollBarUI());
         leftWrapper.add(leftSP, BorderLayout.CENTER);
 
+        // Kullanıcı Yönetimi — sol alt köşede sabit
+        JPanel kullaniciPanel = new JPanel(new BorderLayout());
+        kullaniciPanel.setBackground(AppColors.BG);
+        kullaniciPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+        UIFactory.RoundButton kullaniciBtn = new UIFactory.RoundButton(
+                "  Kullanıcı Yönetimi",
+                new Color(232, 236, 255), new Color(41, 60, 180),
+                new UIFactory.PersonIcon(13, new Color(41, 60, 180)), 10);
+        kullaniciBtn.setFont(gui.theme.AppFonts.BODY_MEDIUM);
+        kullaniciBtn.setPreferredSize(new Dimension(Integer.MAX_VALUE, 40));
+        kullaniciBtn.addActionListener(e ->
+                new KullaniciYonetimiDialog(MainFrame.this).setVisible(true));
+        kullaniciPanel.add(kullaniciBtn, BorderLayout.CENTER);
+        leftWrapper.add(kullaniciPanel, BorderLayout.SOUTH);
+
         center.add(leftWrapper, BorderLayout.WEST);
         center.add(buildTabloPanel(), BorderLayout.CENTER);
 
