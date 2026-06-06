@@ -1,8 +1,21 @@
-2,peugeot,208,200.0,true,MANUEL
-4,audi,a5,500.0,true,OTOMATIK
-1,volkswagen,tiguan,450.0,true,OTOMATIK
-5,bmw,520,450.0,false,MANUEL
-6,mercedes-benz,a180,600.0,true,OTOMATIK
-7,fiat,egea,200.0,true,MANUEL
-10,citroen,c4 aircross,260.0,true,MANUEL
-11,peugeot,3008,400.0,true,OTOMATIK
+1,BMW,520d,2450.0,true,MANUEL
+2,Mercedes-Benz,A180,3400.0,true,OTOMATIK
+3,Renault,Clio,1680.0,true,MANUEL
+4,Citroen,C3 Aircross,2000.0,true,MANUEL
+5,Peugeot,208,1860.0,true,OTOMATIK
+6,Renault,Megane,1550.0,true,MANUEL
+7,Porsche,Panamera,7000.0,true,OTOMATIK
+8,Nissan,Almera,1200.0,true,MANUEL
+9,Toyota,Corolla,2300.0,true,MANUEL
+10,Volkswagen,Beetle,2000.0,true,MANUEL
+11,Volkswagen,Passat,3000.0,true,MANUEL
+12,Volvo,V40 Cross Country,3400.0,true,OTOMATIK
+13,Kia,Picanto,900.0,true,MANUEL
+14,Ford,Focus,2000.0,true,OTOMATIK
+15,Ford,Fiesta,2110.0,true,MANUEL
+16,Hyundai,Accent Blue,700.0,true,MANUEL
+17,Hyundai,i20,1200.0,true,OTOMATIK
+18,Hyundai,i30,1700.0,true,MANUEL
+19,Fiat,Egea,800.0,true,MANUEL
+20,Fiat,Linea,600.0,true,MANUEL
+21,Audi,A4,2300.0,true,OTOMATIK

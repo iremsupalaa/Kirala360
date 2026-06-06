@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
         }
         siralamaService = new SiralamaService();
 
-        setTitle("Araç Kiralama Sistemi");
+        setTitle("Kirala360");
         setMinimumSize(new Dimension(1100, 820));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -123,8 +123,8 @@ public class MainFrame extends JFrame {
 
         // Başlık (sol)
         String titleText = aktifKullanici != null && !aktifKullanici.isEmpty()
-                ? "Araç Kiralama Sistemi  |  " + aktifKullanici
-                : "Araç Kiralama Sistemi";
+                ? "Kirala360 |  " + aktifKullanici
+                : "Kirala360";
         JLabel title = new JLabel(titleText);
         title.setFont(new Font("SansSerif", Font.BOLD, 28));
         title.setForeground(AppColors.TITLE_FG);
@@ -141,16 +141,6 @@ public class MainFrame extends JFrame {
         fiyatCard  = new StatsCard("Toplam Değer", "0 ₺",
                 new Color(255, 245, 225), new Color(210, 120, 20));
 
-
-        // Kullanıcı yönetim butonu
-        UIFactory.RoundButton kullaniciBtn = new UIFactory.RoundButton(
-                "  Kullanıcılar",
-                new Color(240, 242, 255), new Color(41, 98, 255), null, 10);
-        kullaniciBtn.setPreferredSize(new Dimension(120, 38));
-        kullaniciBtn.setFont(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 13));
-        kullaniciBtn.addActionListener(e ->
-                new KullaniciYonetimiDialog(this).setVisible(true));
-        statsPanel.add(kullaniciBtn);
         statsPanel.add(toplamCard);
         statsPanel.add(musaitCard);
         statsPanel.add(fiyatCard);
@@ -185,13 +175,15 @@ public class MainFrame extends JFrame {
         // Kullanıcı Yönetimi — sol alt köşede sabit
         JPanel kullaniciPanel = new JPanel(new BorderLayout());
         kullaniciPanel.setBackground(AppColors.BG);
-        kullaniciPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
+        kullaniciPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 6, 0));
         UIFactory.RoundButton kullaniciBtn = new UIFactory.RoundButton(
-                "  Kullanıcı Yönetimi",
+                "   Kullanıcı Yönetimi",
                 new Color(232, 236, 255), new Color(41, 60, 180),
-                new UIFactory.PersonIcon(13, new Color(41, 60, 180)), 10);
+                new UIFactory.PersonIcon(14, new Color(41, 60, 180)), 12);
         kullaniciBtn.setFont(gui.theme.AppFonts.BODY_MEDIUM);
-        kullaniciBtn.setPreferredSize(new Dimension(Integer.MAX_VALUE, 40));
+        kullaniciBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        kullaniciBtn.setPreferredSize(new Dimension(Integer.MAX_VALUE, 44));
+        kullaniciBtn.setBorder(new javax.swing.border.EmptyBorder(10, 14, 10, 14));
         kullaniciBtn.addActionListener(e ->
                 new KullaniciYonetimiDialog(MainFrame.this).setVisible(true));
         kullaniciPanel.add(kullaniciBtn, BorderLayout.CENTER);
@@ -403,7 +395,7 @@ public class MainFrame extends JFrame {
         filterBar.add(filterLabel("Max ₺:"));
         filterBar.add(maxFiyatField);
         JComboBox<String> sanzFiltre = new JComboBox<>(
-                new String[]{"Tüm Şanzuman", "Manuel", "Ötomatik"});
+                new String[]{"Tüm Şanzuman", "Manuel", "Otomatik"});
         sanzFiltre.setFont(new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 13));
         sanzFiltre.setPreferredSize(new java.awt.Dimension(110, 36));
         sanzFiltre.setName("sanzFiltre");
@@ -792,7 +784,7 @@ public class MainFrame extends JFrame {
                     || ("Kirada".equals(seciliDurum)  && !a.isMusaitMi());
             boolean sanz = "Tüm Şanzuman".equals(sanzSec)
                     || ("Manuel".equals(sanzSec) && a.getSanzuman() == models.Arac.Sanzuman.MANUEL)
-                    || ("Ötomatik".equals(sanzSec) && a.getSanzuman() == models.Arac.Sanzuman.OTOMATIK);
+                    || ("Otomatik".equals(sanzSec) && a.getSanzuman() == models.Arac.Sanzuman.OTOMATIK);
             if (ad && fiy && dur && sanz)
                 tableModel.addRow(tableRow(a, a.isMusaitMi() ? "Müsait" : "Kirada"));
         }
