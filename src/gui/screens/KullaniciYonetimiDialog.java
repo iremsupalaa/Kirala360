@@ -273,17 +273,17 @@ public class KullaniciYonetimiDialog extends JDialog {
 
         // Düzenle — kalem ikonu
         UIFactory.RoundButton duzenleBtn = new UIFactory.RoundButton(
-                "\u270E", new Color(234, 242, 255), ACCENT, null, 8);
+                "\u270F", new Color(234, 242, 255), ACCENT, null, 8);
         duzenleBtn.setPreferredSize(new Dimension(34, 32));
-        duzenleBtn.setFont(AppFonts.BODY_MEDIUM.deriveFont(14f));
+        duzenleBtn.setFont(new Font("Dialog", Font.PLAIN, 15));
         duzenleBtn.setToolTipText("\u015eifreyi d\u00fczenle");
         duzenleBtn.addActionListener(e -> duzenleModu(kullanici));
 
         // Sil — çarpı
         UIFactory.RoundButton silBtn = new UIFactory.RoundButton(
-                "\u2715", new Color(255, 235, 235), RED, null, 8);
+                "\u00d7", new Color(255, 235, 235), RED, null, 8);
         silBtn.setPreferredSize(new Dimension(34, 32));
-        silBtn.setFont(AppFonts.BODY_MEDIUM.deriveFont(13f));
+        silBtn.setFont(new Font("Dialog", Font.BOLD, 17));
         silBtn.setToolTipText("Sil");
         silBtn.addActionListener(e -> kullaniciSil(kullanici));
 
