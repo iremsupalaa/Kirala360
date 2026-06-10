@@ -12,7 +12,7 @@ import java.awt.event.MouseMotionAdapter;
 
 public class ModernTable extends JTable {
 
-    // Fare hangi satırın üzerinde — renderer bu değeri okur
+
     private int hoveredRow = -1;
 
     public ModernTable() {

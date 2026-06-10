@@ -69,7 +69,6 @@ public class AppFonts {
     // Tablo
     public static final Font TABLE_HEADER =
             BOLD.deriveFont(13f);
-
     public static final Font TABLE_CELL =
             REGULAR.deriveFont(13f);
 

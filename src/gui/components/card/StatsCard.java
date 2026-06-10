@@ -15,7 +15,6 @@ public class StatsCard extends JPanel {
     private final Color accentColor;
     private final JLabel valueLabel;
     private final JLabel titleLabel;
-
     // Animasyon için
     private double   currentValue  = 0;
     private double   targetValue   = 0;

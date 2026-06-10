@@ -15,7 +15,6 @@ public class FormGroup extends JPanel {
             String labelText,
             String placeholder
     ) {
-
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setOpaque(false);
         setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -31,9 +30,7 @@ public class FormGroup extends JPanel {
         field.setMaximumSize(
                 new Dimension(Integer.MAX_VALUE, 38)
         );
-
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         add(label);
         add(Box.createVerticalStrut(5));
         add(field);

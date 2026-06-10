@@ -16,7 +16,6 @@ import java.awt.geom.RoundRectangle2D;
 public class ToastNotification extends JWindow {
 
     public enum Type { SUCCESS, WARNING, ERROR, INFO }
-
     private static final int  WIDTH   = 300;
     private static final int  HEIGHT  = 54;
     private static final int  MARGIN  = 20;   // ekran kenarından boşluk
@@ -24,7 +23,6 @@ public class ToastNotification extends JWindow {
     private static final int  FADE_STEPS = 25;
 
     private float alpha = 0f;
-
     private ToastNotification(Frame parent, String message, Type type) {
         super(parent);
         setSize(WIDTH, HEIGHT);
