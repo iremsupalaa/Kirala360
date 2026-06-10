@@ -3,16 +3,11 @@ package gui.theme;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
-/**
- * Modern shadow utility.
- */
+
 public class Shadows {
 
     private Shadows() {}
 
-    /**
-     * Soft modern card shadow.
-     */
     public static void drawShadow(
             Graphics2D g2,
             int width,
@@ -27,11 +22,8 @@ public class Shadows {
 
         // Outer soft shadows
         for (int i = 0; i < 10; i++) {
-
             int alpha = 14 - i;
-
             g2.setColor(new Color(0, 0, 0, Math.max(alpha, 2)));
-
             g2.draw(new RoundRectangle2D.Float(
                     i,
                     i + 1,

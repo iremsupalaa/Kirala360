@@ -11,9 +11,7 @@ public class Kiralama {
     private int gunSayisi;
     private double toplamUcret;
     private LocalDate kiralamaTarihi;
-
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
     public Kiralama(int kiralamaId, Arac arac, Musteri musteri, int gunSayisi) {
         this.kiralamaId   = kiralamaId;
         this.arac         = arac;

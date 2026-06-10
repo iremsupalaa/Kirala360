@@ -16,9 +16,9 @@ public class UIFactory {
 
     private UIFactory() {}
 
-    // ════════════════════════════════════════════════════════════════════════
+
     // YUVARLAK KÖŞELİ KART
-    // ════════════════════════════════════════════════════════════════════════
+
 
     public static class RoundCard extends JPanel {
         private final int r;

@@ -23,7 +23,7 @@ public class TableCellRenderer extends DefaultTableCellRenderer {
         label.setBorder(new EmptyBorder(0, 18, 0, 10));
         label.setOpaque(true);
 
-        // ── Arka plan rengi: seçili > hover > zebra ───────────────────────────
+
         if (isSelected) {
             label.setBackground(table.getSelectionBackground());
             label.setForeground(table.getSelectionForeground());
@@ -40,7 +40,7 @@ public class TableCellRenderer extends DefaultTableCellRenderer {
             label.setForeground(AppColors.TITLE_FG);
         }
 
-        // ── Müsaitlik sütununa özel renklendirme ──────────────────────────────
+        // ── Müsaitlik sütununa özel renklendirme
         if (value instanceof String) {
             String text = (String) value;
             if ("Müsait".equals(text)) {

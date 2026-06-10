@@ -7,9 +7,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 
 public class TableStyler {
-
     private TableStyler() {}
-
     public static void styleTable(
             JTable table,
             JScrollPane scrollPane
@@ -18,11 +16,9 @@ public class TableStyler {
         // Scroll
         scrollPane.setBorder(null);
         scrollPane.getViewport().setBackground(AppColors.CARD_BG);
-
         scrollPane.getVerticalScrollBar().setUI(
                 new ModernScrollBarUI()
         );
-
         scrollPane.getVerticalScrollBar().setPreferredSize(
                 new Dimension(10, 0)
         );
@@ -47,14 +43,10 @@ public class TableStyler {
             JTable table,
             int... widths
     ) {
-
-        TableColumnModel model =
-                table.getColumnModel();
+        TableColumnModel model = table.getColumnModel();
 
         for (int i = 0; i < widths.length; i++) {
-
-            model.getColumn(i)
-                    .setPreferredWidth(widths[i]);
+            model.getColumn(i).setPreferredWidth(widths[i]);
         }
     }
 }

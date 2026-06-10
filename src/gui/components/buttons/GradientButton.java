@@ -8,14 +8,12 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class GradientButton extends JButton {
-
     private final Color startColor;
     private final Color endColor;
     private final int   radius;
 
     private boolean hovered = false;
     private boolean pressed = false;
-
     // ── Tam parametreli constructor ───────────────────────────────────────────
     public GradientButton(String text, Color startColor, Color endColor, int radius) {
         super(text);
@@ -24,7 +22,6 @@ public class GradientButton extends JButton {
         this.radius     = radius;
         init();
     }
-
     // ── Geriye dönük uyumluluk: eski kod radius vermeden çağırabilir ──────────
     public GradientButton(String text, Color startColor, Color endColor) {
         this(text, startColor, endColor, 18);

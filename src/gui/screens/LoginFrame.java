@@ -35,7 +35,6 @@ public class LoginFrame extends JFrame {
     private boolean kilitli      = false;
 
     private final Map<String, String> kullanicilar;
-
     public LoginFrame() {
         kullanicilar = new DosyaService().kullanicilariYukle();
 

@@ -4,30 +4,23 @@ import javax.swing.*;
 import java.awt.*;
 
 public class EyeIcon implements Icon {
-
     private final int size;
     private final Color color;
-
     public EyeIcon(int size, Color color) {
         this.size = size;
         this.color = color;
     }
-
     @Override
     public int getIconWidth() {
         return size;
     }
-
     @Override
     public int getIconHeight() {
         return size;
     }
-
     @Override
     public void paintIcon(Component c, Graphics g, int x, int y) {
-
         Graphics2D g2 = (Graphics2D) g.create();
-
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
